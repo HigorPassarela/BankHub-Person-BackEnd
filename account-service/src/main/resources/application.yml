@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: account-service
+
+  data:
+    mongodb:
+      uri: mongodb://admin:admin@localhost:27017/bankhub_account?authSource=admin
+
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+resilience4j:
+  retry:
+    instances:
+      kafkaRetry:
+        max-attempts: 3
+        wait-duration: 2s
+        retry-exceptions:
+          - java.util.concurrent.TimeoutException
+          - org.springframework.kafka.KafkaException
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

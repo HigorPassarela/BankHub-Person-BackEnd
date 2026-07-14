@@ -10,11 +10,13 @@ repositories {
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.camunda:spring-zeebe-starter:8.4.0'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
 }
 
-test {
-    useJUnitPlatform()
+bootJar {
+    enabled = true
 }

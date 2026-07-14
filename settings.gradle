@@ -1,0 +1,6 @@
+rootProject.name = 'BankHub'
+include 'account-service'
+include 'onboarding-service'
+include 'notification-service'
+include 'api-gateway'
+include 'hub-ia-service'

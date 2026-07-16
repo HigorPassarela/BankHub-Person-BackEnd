@@ -9,12 +9,31 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+ext {
+    set('springCloudVersion', "2023.0.0")
+    set('langChain4jVersion', "0.27.1")
 }
 
-test {
-    useJUnitPlatform()
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation "dev.langchain4j:langchain4j-spring-boot-starter:${langChain4jVersion}"
+    implementation "dev.langchain4j:langchain4j-open-ai:${langChain4jVersion}"
+    implementation "dev.langchain4j:langchain4j-redis:${langChain4jVersion}"
+    implementation "dev.langchain4j:langchain4j:${langChain4jVersion}"
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+bootJar {
+    enabled = true
 }

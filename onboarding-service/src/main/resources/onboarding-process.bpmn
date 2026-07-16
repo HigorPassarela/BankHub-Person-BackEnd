@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0qthcrl" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="OnboardingProcess" name="Processo de Onboarding de Contas" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Cliente Solicita Abertura">
+      <bpmn:outgoing>Flow_1519b02</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1519b02" sourceRef="StartEvent_1" targetRef="Activity_0281vql" />
+    <bpmn:serviceTask id="Activity_0281vql" name="Analisar Risco Financeiro">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="analyze-risk" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1519b02</bpmn:incoming>
+      <bpmn:outgoing>Flow_13ktu1o</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_1amrhlk" name="Aprovado?">
+      <bpmn:incoming>Flow_13ktu1o</bpmn:incoming>
+      <bpmn:outgoing>Flow_1l8i7cn</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0yueupm</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_13ktu1o" sourceRef="Activity_0281vql" targetRef="Gateway_1amrhlk" />
+    <bpmn:sequenceFlow id="Flow_1l8i7cn" name="Sim" sourceRef="Gateway_1amrhlk" targetRef="Activity_1xfs8bb">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">== isApproved = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="Event_1loguk7" name="Reprovado">
+      <bpmn:incoming>Flow_0yueupm</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0yueupm" name="Não" sourceRef="Gateway_1amrhlk" targetRef="Event_1loguk7">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">== isApproved = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Activity_1xfs8bb" name="Provisionar Conta">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="provision-account" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1l8i7cn</bpmn:incoming>
+      <bpmn:outgoing>Flow_0lix8rn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_1kmarb5" name="Conta Criada">
+      <bpmn:incoming>Flow_0lix8rn</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0lix8rn" sourceRef="Activity_1xfs8bb" targetRef="Event_1kmarb5" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="OnboardingProcess">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="164" y="155" width="73" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1kycghg_di" bpmnElement="Activity_0281vql">
+        <dc:Bounds x="270" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1amrhlk_di" bpmnElement="Gateway_1amrhlk" isMarkerVisible="true">
+        <dc:Bounds x="425" y="105" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="423" y="81" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1loguk7_di" bpmnElement="Event_1loguk7">
+        <dc:Bounds x="532" y="222" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="524" y="265" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0wlv8nj_di" bpmnElement="Activity_1xfs8bb">
+        <dc:Bounds x="550" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1kmarb5_di" bpmnElement="Event_1kmarb5">
+        <dc:Bounds x="732" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="718" y="155" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1519b02_di" bpmnElement="Flow_1519b02">
+        <di:waypoint x="218" y="130" />
+        <di:waypoint x="270" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13ktu1o_di" bpmnElement="Flow_13ktu1o">
+        <di:waypoint x="370" y="130" />
+        <di:waypoint x="425" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1l8i7cn_di" bpmnElement="Flow_1l8i7cn">
+        <di:waypoint x="475" y="130" />
+        <di:waypoint x="550" y="130" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="503" y="112" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0yueupm_di" bpmnElement="Flow_0yueupm">
+        <di:waypoint x="450" y="155" />
+        <di:waypoint x="450" y="240" />
+        <di:waypoint x="532" y="240" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="455" y="194.5" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lix8rn_di" bpmnElement="Flow_0lix8rn">
+        <di:waypoint x="650" y="130" />
+        <di:waypoint x="732" y="130" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

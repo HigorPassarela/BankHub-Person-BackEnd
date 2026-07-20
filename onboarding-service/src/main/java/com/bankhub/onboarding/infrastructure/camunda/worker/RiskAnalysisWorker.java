@@ -27,9 +27,9 @@ public class RiskAnalysisWorker {
      */
     @JobWorker(type = "analyze-risk", autoComplete = true)
     public Map<String, Object> analyzeRisk(
-            @Variable String customerId,
-            @Variable String documentNumber,
-            @Variable BigDecimal monthlyIncome) {
+            @Variable(name = "customerId") String customerId,
+            @Variable(name = "documentNumber") String documentNumber,
+            @Variable(name = "monthlyIncome") BigDecimal monthlyIncome) {
 
         log.info("Camunda Worker acionado: Iniciando análise de risco para o cliente [{}]", customerId);
 

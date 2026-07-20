@@ -26,7 +26,7 @@ public class ProvisionAccountWorker {
      */
     @JobWorker(type = "provision-account", autoComplete = true)
     @Retry(name = "kafkaRetry", fallbackMethod = "fallbackProvisioning")
-    public void provisionAccount(@Variable String customerId) {
+    public void provisionAccount(@Variable(name = "customerId") String customerId) {
         log.info("Camunda Worker acionado: Provisionando conta bancária para o cliente [{}]", customerId);
 
         Map<String, Object> commandMessage = Map.of(

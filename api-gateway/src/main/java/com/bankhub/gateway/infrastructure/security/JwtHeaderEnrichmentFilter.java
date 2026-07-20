@@ -20,14 +20,13 @@ public class JwtHeaderEnrichmentFilter implements GlobalFilter, Ordered {
                 .map(securityContext -> securityContext.getAuthentication())
                 .cast(JwtAuthenticationToken.class)
                 .map(jwtAuth -> {
-                    String userId = jwtAuth.getToken().getSubject();
-                    String role = jwtAuth.getToken().getClaimAsString("scope");
 
-                    log.debug("Enriquecendo requisição com os Headers de Autenticação para o usuário: {}", userId);
+                    String userId = jwtAuth.getToken().getSubject();
+
+                    log.debug("Security: Enriquecendo requisição com X-User-Id: {}", userId);
 
                     var mutatedRequest = exchange.getRequest().mutate()
                             .header("X-User-Id", userId)
-                            .header("X-User-Role", role != null ? role : "USER")
                             .build();
 
                     return exchange.mutate().request(mutatedRequest).build();

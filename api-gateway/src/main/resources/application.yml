@@ -16,13 +16,13 @@ spring:
         jwt:
           # URI pública do servidor de identidade (Keycloak/Auth0/Mock) que fornece a chave pública
           # Nota: em ambiente local sem Auth Server real, você precisará usar uma chave secreta estática ou mock.
-          jwk-set-uri: http://localhost:9000/oauth2/jwks
+          jwk-set-uri: http://keycloak:8080/realms/master/protocol/openid-connect/certs
 
   cloud:
     gateway:
       routes:
         - id: account-service-route
-          uri: http://localhost:8081 # Redireciona para o Account Service
+          uri: ${ACCOUNT_SERVICE_URL:http://localhost:8081} # Redireciona para o Account Service
           predicates:
             - Path=/api/v1/accounts/**
           filters:

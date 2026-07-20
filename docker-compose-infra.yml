@@ -2,6 +2,7 @@ version: '3.8'
 
 networks:
   bank-network:
+    name: bank-network
     driver: bridge
 
 volumes:
@@ -10,7 +11,7 @@ volumes:
   kafka_data:
   zookeeper_data:
   es_data:
-  ollama_data:
+  litellm_db_data:
 
 services:
   mongodb:
@@ -37,29 +38,33 @@ services:
       - bank-network
 
   zookeeper:
-    image: bitnami/zookeeper:3.8
+    image: confluentinc/cp-zookeeper:7.4.4
     container_name: bank-zookeeper
     ports:
       - "2181:2181"
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     volumes:
-      - zookeeper_data:/bitnami/zookeeper
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_data:/var/lib/zookeeper/log
     networks:
       - bank-network
 
   kafka:
-    image: bitnami/kafka:3.4
+    image: confluentinc/cp-kafka:7.4.4
     container_name: bank-kafka
     ports:
       - "9092:9092"
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
-      - kafka_data:/bitnami/kafka
+      - kafka_data:/var/lib/kafka/data
     depends_on:
       - zookeeper
     networks:
@@ -95,7 +100,7 @@ services:
     image: camunda/operate:8.4.0
     container_name: bank-operate
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - CAMUNDA_OPERATE_ZEEBE_GATEWAYADDRESS=zeebe:26500
       - CAMUNDA_OPERATE_ELASTICSEARCH_URL=http://elasticsearch:9200
@@ -110,8 +115,8 @@ services:
     image: mailhog/mailhog:v1.0.1
     container_name: bank-mailhog
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
+      - "1025:1025"
+      - "8025:8025"
     networks:
       - bank-network
 
@@ -120,5 +125,39 @@ services:
     container_name: bank-litellm
     ports:
       - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://litellm:litellm_senha@litellm-db:5432/litellm
+      - LITELLM_MASTER_KEY=sk-1234
+      - UI_USERNAME=admin
+      - UI_PASSWORD=sk-1234
+      - STORE_MODEL_IN_DB=True
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - litellm-db
+    networks:
+      - bank-network
+
+  litellm-db:
+    image: postgres:15-alpine
+    container_name: bank-litellm-db
+    environment:
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: litellm_senha
+      POSTGRES_DB: litellm
+    volumes:
+      - litellm_db_data:/var/lib/postgresql/data
+    networks:
+      - bank-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.4
+    container_name: bank-keycloak
+    ports:
+      - "9000:8080" # Expõe o Keycloak na porta 9000 do Windows
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
     networks:
       - bank-network

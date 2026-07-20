@@ -12,12 +12,12 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class AccountStatusGuardrailFilter extends AbstractGatewayFilterFactory<AccountStatusGuardrailFilter.Config> {
+public class AccountStatusGuardrailGatewayFilterFactory extends AbstractGatewayFilterFactory<AccountStatusGuardrailGatewayFilterFactory.Config> {
 
     private final ReactiveStringRedisTemplate redisTemplate;
     private static final String REDIS_KEY_PREFIX = "status:account:";
 
-    public AccountStatusGuardrailFilter(ReactiveStringRedisTemplate redisTemplate) {
+    public AccountStatusGuardrailGatewayFilterFactory(ReactiveStringRedisTemplate redisTemplate) {
         super(Config.class);
         this.redisTemplate = redisTemplate;
     }

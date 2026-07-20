@@ -19,13 +19,13 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_13ktu1o" sourceRef="Activity_0281vql" targetRef="Gateway_1amrhlk" />
     <bpmn:sequenceFlow id="Flow_1l8i7cn" name="Sim" sourceRef="Gateway_1amrhlk" targetRef="Activity_1xfs8bb">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">== isApproved = true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=isApproved = true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="Event_1loguk7" name="Reprovado">
       <bpmn:incoming>Flow_0yueupm</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0yueupm" name="Não" sourceRef="Gateway_1amrhlk" targetRef="Event_1loguk7">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">== isApproved = false</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=isApproved = false</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:serviceTask id="Activity_1xfs8bb" name="Provisionar Conta">
       <bpmn:extensionElements>
@@ -93,7 +93,7 @@
         <di:waypoint x="450" y="240" />
         <di:waypoint x="532" y="240" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="455" y="194.5" width="21" height="14" />
+          <dc:Bounds x="455" y="195" width="21" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0lix8rn_di" bpmnElement="Flow_0lix8rn">

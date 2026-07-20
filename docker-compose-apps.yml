@@ -1,0 +1,73 @@
+version: '3.8'
+
+networks:
+  bank-network:
+    external: true
+
+services:
+  account-service:
+    build:
+      context: ./account-service
+    container_name: bank-account-service
+    ports:
+      - "8091:8081"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@mongodb:27017/bankhub_account?authSource=admin
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    networks:
+      - bank-network
+
+  onboarding-service:
+    build:
+      context: ./onboarding-service
+    container_name: bank-onboarding-service
+    ports:
+      - "8092:8082"
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ZEEBE_CLIENT_BROKER_GATEWAY_ADDRESS=zeebe:26500
+    networks:
+      - bank-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+    container_name: bank-notification-service
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_MAIL_HOST=mailhog
+    networks:
+      - bank-network
+
+  hub-ia-service:
+    build:
+      context: ./hub-ia-service
+    container_name: bank-hub-ia
+    ports:
+      - "8094:8084"
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+      - BANKHUB_SERVICES_ACCOUNT_URL=http://account-service:8081
+      - LANGCHAIN4J_OPEN_AI_CHAT_MODEL_BASE_URL=http://litellm:4000/v1
+      - LANGCHAIN4J_OPEN_AI_CHAT_MODEL_API_KEY=sk-1234
+    depends_on:
+      - account-service
+    networks:
+      - bank-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: bank-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+      - ACCOUNT_SERVICE_URL=http://account-service:8081
+    depends_on:
+      - account-service
+      - onboarding-service
+      - hub-ia-service
+    networks:
+      - bank-network

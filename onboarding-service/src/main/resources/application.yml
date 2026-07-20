@@ -6,17 +6,24 @@ spring:
     name: onboarding-service
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: false
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URI para buscar a chave pública do Keycloak no ambiente local/Docker
+          jwk-set-uri: http://keycloak:8080/realms/master/protocol/openid-connect/certs
+
 zeebe:
   client:
     broker:
-      gateway-address: 127.0.0.1:26500
+      gateway-address: ${ZEEBE_CLIENT_BROKER_GATEWAY_ADDRESS:127.0.0.1:26500}
     security:
       plaintext: true
 

@@ -7,22 +7,28 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: 6379
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://keycloak:8080/realms/master/protocol/openid-connect/certs
 
 bankhub:
   services:
     account:
-      url: http://localhost:8081
+      url: ${BANKHUB_SERVICES_ACCOUNT_URL:http://localhost:8081}
 
 langchain4j:
   open-ai:
     chat-model:
-      base-url: http://localhost:4000/v1 # Roteia a API "Fake OpenAI" para o LiteLLM
-      api-key: mock-key-local # Obrigatório pelo starter, mas ignorado pelo LiteLLM
+      base-url: ${LANGCHAIN4J_OPEN_AI_CHAT_MODEL_BASE_URL:http://localhost:4000/v1}
+      api-key: ${LANGCHAIN4J_OPEN_AI_CHAT_MODEL_API_KEY:mock-key}
       model-name: ollama/gemma2
-      temperature: 0.2 # Baixa temperatura para a IA ser mais séria e analítica (Contexto Bancário)
-      max-tokens: 500  # Evita que o LLM gaste muito processamento local gerando textos gigantescos
+      temperature: 0.2
+      max-tokens: 500
 
 resilience4j:
   circuitbreaker:
@@ -33,6 +39,10 @@ resilience4j:
         wait-duration-in-open-state: 10s
         permitted-number-of-calls-in-half-open-state: 3
         automatic-transition-from-open-to-half-open-enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
 
 management:
   endpoints:

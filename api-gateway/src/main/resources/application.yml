@@ -21,19 +21,30 @@ spring:
   cloud:
     gateway:
       routes:
+        # Rota 1: Account Service (Tem Rate Limiter e Guardrail)
         - id: account-service-route
-          uri: ${ACCOUNT_SERVICE_URL:http://localhost:8081} # Redireciona para o Account Service
+          uri: http://bank-account-service:8081
           predicates:
             - Path=/api/v1/accounts/**
           filters:
-            # Ativa o Guardrail que criamos para essa rota específica
             - AccountStatusGuardrail
-            # Ativa o Rate Limiter baseado em Redis
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 10
                 redis-rate-limiter.burstCapacity: 20
                 redis-rate-limiter.requestedTokens: 1
+
+        # Rota 2: Onboarding Service
+        - id: onboarding-service-route
+          uri: http://bank-onboarding-service:8082
+          predicates:
+            - Path=/api/v1/onboarding/**
+
+        # Rota 3: Hub IA Service (Chat)
+        - id: hub-ia-service-route
+          uri: http://bank-hub-ia:8084
+          predicates:
+            - Path=/api/v1/chat/**
 
 management:
   endpoints:

@@ -10,17 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/v1/accounts")
-@Tag(name = "Account", description = "Operações de Gerenciamento de Contas (Bank-Hub)")
+@Tag(name = "Account", description = "Operações de Gerenciamento de Contas e Ciclo de Vida (Bank-Hub)")
 public interface AccountApi {
 
-    @Operation(summary = "Criar uma nova conta bancária para o usuário autenticado.")
+    @Operation(summary = "Criar uma nova conta bancária para o usuário autenticado (Nasce PENDENTE).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Conta criada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
@@ -29,7 +25,7 @@ public interface AccountApi {
     })
     @PostMapping
     ResponseEntity<AccountResponse> createAccount(
-            @Parameter(description = "ID do usuário injetado pelo API Gateway via JWT", hidden = true)
+            @Parameter(description = "ID do usuário autenticado (Injetado via API Gateway)")
             @RequestHeader("X-User-Id") String customerId
     );
 
@@ -38,15 +34,30 @@ public interface AccountApi {
             @ApiResponse(responseCode = "200", description = "Conta encontrada",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
             @ApiResponse(responseCode = "404", description = "Conta não encontrada ou pertence a outro cliente",
-                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
                     content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/{accountId}")
     ResponseEntity<AccountResponse> getAccount(
             @Parameter(description = "ID da conta que deseja consultar")
             @PathVariable String accountId,
-            @Parameter(description = "ID do usuário injetado pelo API Gateway via JWT", hidden = true)
+            @Parameter(description = "ID do usuário autenticado (Injetado via API Gateway)")
+            @RequestHeader("X-User-Id") String customerId
+    );
+
+    @Operation(summary = "Ativa uma conta pendente, liberando-a para transações e Inteligência Artificial.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Conta ativada com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada ou pertence a outro cliente",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "400", description = "Conta já está ativa ou bloqueada",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/{accountId}/activate")
+    ResponseEntity<AccountResponse> activateAccount(
+            @Parameter(description = "ID da conta que deseja ativar")
+            @PathVariable String accountId,
+            @Parameter(description = "ID do usuário autenticado (Injetado via API Gateway)")
             @RequestHeader("X-User-Id") String customerId
     );
 }

@@ -17,6 +17,19 @@ public record Account(
         LocalDateTime updatedAt
 ) {
 
+    public Account activate() {
+        return Account.builder()
+                .id(this.id)
+                .customerId(this.customerId)
+                .accountNumber(this.accountNumber)
+                .balance(this.balance)
+                .status(AccountStatus.ACTIVE)
+                .version(this.version)
+                .createdAt(this.createdAt)
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
     public Account block() {
         return Account.builder()
                 .id(this.id)

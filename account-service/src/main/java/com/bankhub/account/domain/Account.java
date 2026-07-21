@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public record Account(
         String id,
         String customerId,
+        AccountNumber accountNumber,
         Balance balance,
         AccountStatus status,
         Long version,
@@ -20,6 +21,7 @@ public record Account(
         return Account.builder()
                 .id(this.id)
                 .customerId(this.customerId)
+                .accountNumber(this.accountNumber)
                 .balance(this.balance)
                 .status(AccountStatus.BLOCKED)
                 .version(this.version)
@@ -33,11 +35,12 @@ public record Account(
             throw new IllegalArgumentException("Valor de crédito deve ser maior que zero.");
         }
 
-        Balance newBalance = new Balance(this.balance().amount().add(amount), this.balance.currency());
+        Balance newBalance = new Balance(this.balance.amount().add(amount), this.balance.currency());
 
         return Account.builder()
                 .id(this.id)
                 .customerId(this.customerId)
+                .accountNumber(this.accountNumber)
                 .balance(newBalance)
                 .status(this.status)
                 .version(this.version)
@@ -51,16 +54,17 @@ public record Account(
             throw new IllegalArgumentException("Valor de débito deve ser maior que zero.");
         }
 
-        Balance newBalance = new Balance(this.balance().amount().subtract(amount), this.balance.currency());
+        Balance newBalance = new Balance(this.balance.amount().subtract(amount), this.balance.currency());
 
         return Account.builder()
                 .id(this.id)
                 .customerId(this.customerId)
+                .accountNumber(this.accountNumber)
                 .balance(newBalance)
                 .status(this.status)
                 .version(this.version)
                 .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 }

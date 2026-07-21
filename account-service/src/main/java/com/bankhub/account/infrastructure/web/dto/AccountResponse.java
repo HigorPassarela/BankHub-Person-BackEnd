@@ -8,10 +8,17 @@ import java.time.LocalDateTime;
 @Builder
 public record AccountResponse(
         String account,
+        BankDetailsResponse bankDetails,
         BalanceResponse balance,
         String status,
         LocalDateTime lastUpdate
 ) {
+
+    @Builder
+    public record BankDetailsResponse(
+            String agency,
+            String number
+    ){}
 
     /**
      * DTO aninhado para representar o bloco do saldo conforme contrato JSON:

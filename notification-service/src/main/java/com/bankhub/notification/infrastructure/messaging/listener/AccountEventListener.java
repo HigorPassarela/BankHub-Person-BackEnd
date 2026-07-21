@@ -27,13 +27,15 @@ public class AccountEventListener {
             String accountId = message.payload().accountId();
             String status = message.payload().status();
 
+            String agency = message.payload().agency();
+            String accountNumber = message.payload().accountNumber();
+
             log.info("Acionando caso de uso para a Conta: {} | Evento: {}", accountId, eventType);
 
-            sendNotificationUseCase.execute(accountId, eventType, status);
+            sendNotificationUseCase.execute(accountId, eventType, status, agency, accountNumber);
+
         } catch (Exception e) {
             log.error("Erro inesperado ao processar evento Kafka para notificação: {}", e.getMessage(), e);
-            // O Spring Kafka lida com o offset (acknowledgment). Em caso de erro aqui,
-            // a estratégia de retentativa padrão do contêiner do Kafka entra em ação.
         }
     }
 }

@@ -19,7 +19,7 @@ public class AccountTools {
      * Ferramenta disponibilizada para o LLM. A descrição na anotação @Tool
      * atua como prompt dinâmico para o raciocínio da IA.
      */
-    @Tool("Busca os dados completos da conta bancária de um cliente, incluindo o saldo atual e o status da conta.")
+    @Tool("Busca os dados completos da conta bancária de um cliente, incluindo agência, número, saldo e status.")
     @CircuitBreaker(name = "accountServiceCB", fallbackMethod = "fallbackGetAccountData")
     public String getAccountData(String accountId, String customerId) {
         log.info("Tool Executor: IA solicitou os dados da conta {} para o cliente {}", accountId, customerId);
@@ -27,8 +27,9 @@ public class AccountTools {
         AccountClientResponse response = accountFeignClient.getAccount(accountId, customerId);
 
         return String.format(
-                "A conta [%s] encontra-se no status [%s]. O saldo atual é de [%s %s]. A última atualização ocorreu em [%s].",
-                response.account(),
+                "A conta é da Agência [%s] e Número [%s]. O status é [%s]. O saldo atual é de [%s %s]. A última atualização ocorreu em [%s].",
+                response.bankDetails().agency(),
+                response.bankDetails().number(),
                 response.status(),
                 response.balance().valor(),
                 response.balance().moeda(),

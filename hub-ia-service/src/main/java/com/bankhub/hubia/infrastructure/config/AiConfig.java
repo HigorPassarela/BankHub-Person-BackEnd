@@ -1,8 +1,6 @@
 package com.bankhub.hubia.infrastructure.config;
 
 import com.bankhub.hubia.application.agent.BankAssistantAgent;
-import com.bankhub.hubia.application.graph.node.AccountTools;
-import com.bankhub.hubia.infrastructure.cache.RedisChatMemoryStore;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
@@ -41,8 +39,7 @@ public class AiConfig {
     @Bean
     public BankAssistantAgent bankAssistantAgent(
             ChatLanguageModel chatLanguageModel,
-            ChatMemoryStore chatMemoryStore,
-            AccountTools accountTools
+            ChatMemoryStore chatMemoryStore
     ) {
 
         return AiServices.builder(BankAssistantAgent.class)
@@ -52,7 +49,6 @@ public class AiConfig {
                         .maxMessages(20)
                         .chatMemoryStore(chatMemoryStore)
                         .build())
-                .tools(accountTools)
                 .build();
     }
 }

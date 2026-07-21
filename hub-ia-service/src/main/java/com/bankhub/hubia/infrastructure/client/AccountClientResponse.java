@@ -8,13 +8,20 @@ import java.time.LocalDateTime;
  */
 public record AccountClientResponse(
         String account,
+        BankDetailsResponse bankDetails,
         BalanceResponse balance,
         String status,
         LocalDateTime lastUpdate
 ) {
 
+    public record BankDetailsResponse(
+            String agency,
+            String number
+    ) {}
+
     public record BalanceResponse(
             BigDecimal valor,
             String moeda
-    ){}
+    ) {}
+
 }

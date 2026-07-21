@@ -19,7 +19,9 @@ public record AccountEventMessage(
 
     public record Payload(
             String accountId,
-            String status
+            String status,
+            String agency,
+            String accountNumber
     ) {
     }
 }

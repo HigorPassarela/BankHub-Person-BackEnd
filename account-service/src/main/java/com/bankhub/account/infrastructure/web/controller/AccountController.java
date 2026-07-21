@@ -1,5 +1,6 @@
 package com.bankhub.account.infrastructure.web.controller;
 
+import com.bankhub.account.application.port.in.ActivateAccountUseCase;
 import com.bankhub.account.application.port.in.CreateAccountUseCase;
 import com.bankhub.account.application.port.in.FindAccountUseCase;
 import com.bankhub.account.domain.Account;
@@ -19,6 +20,7 @@ public class AccountController implements AccountApi {
 
     private final CreateAccountUseCase createAccountUseCase;
     private final FindAccountUseCase findAccountUseCase;
+    private final ActivateAccountUseCase activateAccountUseCase;
     private final AccountWebMapper webMapper;
 
     @Override
@@ -37,6 +39,16 @@ public class AccountController implements AccountApi {
 
         Account foundAccount = findAccountUseCase.execute(accountId, customerId);
         AccountResponse response = webMapper.toResponse(foundAccount);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<AccountResponse> activateAccount(String accountId, String customerId) {
+        log.info("Recebida requisição REST para ATIVAR a conta: {}. Titular: {}", accountId, customerId);
+
+        Account activatedAccount = activateAccountUseCase.execute(accountId, customerId);
+        AccountResponse response = webMapper.toResponse(activatedAccount);
 
         return ResponseEntity.ok(response);
     }

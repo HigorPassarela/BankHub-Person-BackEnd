@@ -28,6 +28,9 @@ public class AccountEventPublisher {
     public void handleAccountCreatedEvent(AccountCreatedEvent event) {
         log.info("Preparando envio de evento Kafka para a conta: {}", event.account().id());
 
+        String agency = event.account().accountNumber() != null ? event.account().accountNumber().agency() : "N/A";
+        String number = event.account().accountNumber() != null ? event.account().accountNumber().number() : "N/A";
+
         AccountEventMessage message = AccountEventMessage.builder()
                 .header(AccountEventMessage.Header.builder()
                         .correlationId(UUID.randomUUID().toString())
@@ -37,6 +40,8 @@ public class AccountEventPublisher {
                 .payload(AccountEventMessage.Payload.builder()
                         .accountId(event.account().id())
                         .status(event.account().status().name())
+                        .agency(agency)
+                        .accountNumber(number)
                         .build())
                 .build();
 
@@ -51,7 +56,5 @@ public class AccountEventPublisher {
     public void fallbackPublish(AccountCreatedEvent event, Exception ex) {
         log.error("CRÍTICO: Falha ao enviar evento Kafka após retentativas. Conta ID: {}. Motivo: {}",
                 event.account().id(), ex.getMessage());
-        // Em um ambiente de produção avançado, aqui salvaríamos em uma tabela 'Outbox' no Mongo
-        // para uma rotina de repescagem tentar enviar depois.
     }
 }

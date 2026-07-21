@@ -20,6 +20,8 @@ public record AccountEventMessage(
     @Builder
     public record Payload(
        String accountId,
-       String status
+       String status,
+       String agency,
+       String accountNumber
     ) {}
 }

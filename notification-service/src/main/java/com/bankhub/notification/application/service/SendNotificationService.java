@@ -14,13 +14,13 @@ public class SendNotificationService implements SendNotificationUseCase {
     private final EmailNotificationPort emailPort;
 
     @Override
-    public void execute(String accountId, String eventType, String status) {
+    public void execute(String accountId, String eventType, String status, String agency, String accountNumber) {
         log.info("Orquestrando notificação em HTML para a conta: {}, Evento: {}", accountId, eventType);
 
         String customerEmail = "cliente-" + accountId + "@bankhub.local";
         String subject = formatSubject(eventType);
 
-        String htmlBody = formatHtmlBody(accountId, eventType, status);
+        String htmlBody = formatHtmlBody(accountId, eventType, status, agency, accountNumber);
 
         emailPort.sendHtmlEmail(customerEmail, subject, htmlBody);
 
@@ -42,7 +42,7 @@ public class SendNotificationService implements SendNotificationUseCase {
      * Template HTML responsivo e com design corporativo de banco digital.
      * Incorpora a visão da Season 2 (Botão para criar senha).
      */
-    private String formatHtmlBody(String accountId, String eventType, String status) {
+    private String formatHtmlBody(String accountId, String eventType, String status, String agency, String accountNumber) {
         String activationLink = "http://bank-hub.com/ativar/" + accountId;
 
         return String.format("""
@@ -71,9 +71,10 @@ public class SendNotificationService implements SendNotificationUseCase {
                         <p>É com grande alegria que informamos que o seu processo de análise foi aprovado e a sua conta acaba de nascer no nosso ecossistema!</p>
                         
                         <div class="account-box">
-                            <strong>Número da sua Conta:</strong> %s <br>
-                            <strong>Status Atual:</strong> <span style="color: #00b894; font-weight: bold;">%s</span> <br>
-                            <strong>Ação:</strong> %s
+                            <strong>Agência:</strong> %s <br>
+                            <strong>Número da Conta:</strong> %s <br>
+                            <strong>Status Atual:</strong> <span style="color: #ff9f43; font-weight: bold;">%s</span> <br>
+                            <strong>Ação do Sistema:</strong> %s
                         </div>
                         
                         <p>Para começarmos a investir na Bolsa de Valores, comprar CDBs e realizar PIX ilimitados, precisamos apenas do último passo de segurança.</p>
@@ -89,6 +90,6 @@ public class SendNotificationService implements SendNotificationUseCase {
                 </div>
             </body>
             </html>
-            """, accountId, status, eventType, activationLink, activationLink, activationLink);
+            """, agency, accountNumber, status, eventType, activationLink, activationLink, activationLink);
     }
 }

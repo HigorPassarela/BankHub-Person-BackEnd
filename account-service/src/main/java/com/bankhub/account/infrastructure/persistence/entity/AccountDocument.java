@@ -27,6 +27,8 @@ public class AccountDocument {
     @Indexed
     private String customerId;
 
+    private AccountNumberModel accountNumber;
+
     private BalanceModel balance;
 
     private AccountStatus status;

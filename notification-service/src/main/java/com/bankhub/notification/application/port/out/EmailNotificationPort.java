@@ -1,16 +1,17 @@
 package com.bankhub.notification.application.port.out;
 
 /**
- * Porta de saída para o envio de notificações por e-mail.
+ * Porta de saída para o envio de notificações por e-mail (Suporte a HTML).
  */
 public interface EmailNotificationPort {
 
     /**
-     * Envia um e-mail de texto simples.
+     * Envia um e-mail rico formatado em HTML.
      *
      * @param to Endereço de destino.
      * @param subject Assunto do e-mail.
-     * @param body Corpo da mensagem.
+     * @param htmlBody Corpo da mensagem com tags HTML e CSS inline.
      */
-    void sendEmail(String to, String subject, String body);
+    void sendHtmlEmail(String to, String subject, String htmlBody);
+
 }

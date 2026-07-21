@@ -5,10 +5,9 @@ import com.bankhub.account.infrastructure.messaging.dto.AccountEventMessage;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -24,7 +23,7 @@ public class AccountEventPublisher {
     /**
      * Ouve o evento interno disparado pelo Facade APÓS o commit no banco de dados.
      */
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     @Retry(name = "kafkaRetry", fallbackMethod = "fallbackPublish")
     public void handleAccountCreatedEvent(AccountCreatedEvent event) {
         log.info("Preparando envio de evento Kafka para a conta: {}", event.account().id());

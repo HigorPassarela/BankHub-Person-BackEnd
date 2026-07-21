@@ -5,6 +5,7 @@ import com.bankhub.account.application.port.out.AccountPersistencePort;
 import com.bankhub.account.domain.Account;
 import com.bankhub.account.domain.AccountStatus;
 import com.bankhub.account.domain.Balance;
+import com.bankhub.account.domain.event.AccountCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,6 +34,8 @@ public class CreateAccountService implements CreateAccountUseCase {
         Account savedAccount = persistencePort.save(newAccount);
 
         log.info("Conta criada com sucesso no banco. ID: {}", savedAccount.id());
+
+        eventPublisher.publishEvent(new AccountCreatedEvent(savedAccount));
 
         return savedAccount;
     }

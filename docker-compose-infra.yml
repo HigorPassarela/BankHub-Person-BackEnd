@@ -126,11 +126,13 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - DATABASE_URL=postgresql://litellm:litellm_senha@litellm-db:5432/litellm
-      - LITELLM_MASTER_KEY=sk-1234
       - UI_USERNAME=admin
       - UI_PASSWORD=sk-1234
       - STORE_MODEL_IN_DB=True
+    volumes:
+      - ./litellm-config.yaml:/app/config.yaml
+    command:
+      - "--config=/app/config.yaml"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

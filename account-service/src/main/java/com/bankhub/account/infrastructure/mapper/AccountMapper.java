@@ -21,9 +21,14 @@ public interface AccountMapper {
 
     /**
      * Converte o sub-documento de saldo para o Value Object de Domínio.
+     * MUDANÇA: Usa um método 'default' para blindar contra saldos nulos vindos do banco!
      */
-    Balance toDomainBalance(BalanceModel model);
-
+    default Balance toDomainBalance(BalanceModel model) {
+        if (model == null || model.getAmounts() == null) {
+            return Balance.zero();
+        }
+        return new Balance(model.getAmounts(), model.getCurrency());
+    }
     /**
      * Converte o Value Object de Domínio para o sub-documento do MongoDB.
      */

@@ -1,0 +1,18 @@
+model_list:
+  - model_name: ollama/gemma2
+    litellm_params:
+      model: ollama/gemma2
+      api_base: "http://host.docker.internal:11434"
+      rpm_limit: 100
+      input_cost_per_token: 0.00000015
+      output_cost_per_token: 0.00000060
+
+litellm_settings:
+  drop_params: true
+  set_verbose: true
+
+general_settings:
+  master_key: "sk-1234"
+  database_url: "postgresql://litellm:litellm_senha@litellm-db:5432/litellm"
+  store_model_in_db: true
+  store_prompts_in_spend_logs: true

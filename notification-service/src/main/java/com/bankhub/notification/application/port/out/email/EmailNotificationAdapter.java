@@ -2,10 +2,11 @@ package com.bankhub.notification.application.port.out.email;
 
 import com.bankhub.notification.application.port.out.EmailNotificationPort;
 import io.github.resilience4j.retry.annotation.Retry;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -19,27 +20,33 @@ public class EmailNotificationAdapter implements EmailNotificationPort {
 
     @Override
     @Retry(name = "emailRetry", fallbackMethod = "fallbackEmail")
-    public void sendEmail(String to, String subject, String body) {
-        log.info("Preparando envio de e-mail via SMTP para: {}", to);
+    public void sendHtmlEmail(String to, String subject, String htmlBody) {
+        log.info("Preparando envio de e-mail HTML via SMTP para: {}", to);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(FROM_ADDRESS);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
 
-        mailSender.send(message);
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        log.info("E-Mail enviado com sucesso para: {}", to);
+            helper.setFrom(FROM_ADDRESS);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true);
+
+            mailSender.send(message);
+
+            log.info("E-mail HTML enviado com sucesso para: {}", to);
+        } catch (Exception e) {
+            log.error("Erro ao formatar o e-mail HTML para {}. Motivo: {}", to, e.getMessage());
+            throw new RuntimeException("Falha na formatação MIME do E-mail", e);
+        }
     }
 
     /**
-     * Fallback executado pelo Resilience4j caso o servidor SMTP esteja fora do ar.
+     * Fallback executado pelo Resilience4j em caso de indisponibilidade extrema do SMTP.
      */
-    public void fallbackEmail(String to, String subject, String body, Exception ex) {
+    public void fallbackEmail(String to, String subject, String htmlBody, Exception ex) {
         log.error("CRÍTICO: Falha definitiva ao enviar e-mail para {}. Assunto: {}. Motivo: {}",
                 to, subject, ex.getMessage());
-        // Em um sistema robusto, poderíamos persistir esta mensagem em uma "Dead Letter Queue" (DLQ)
-        // ou tabela de retentativa para que não seja perdida para sempre.
     }
 }

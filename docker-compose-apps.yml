@@ -64,7 +64,9 @@ services:
       - "8080:8080"
     environment:
       - SPRING_DATA_REDIS_HOST=redis
-      - ACCOUNT_SERVICE_URL=http://account-service:8081
+        - ACCOUNT_SERVICE_URL=http://account-service:8081
+        - ONBOARDING_SERVICE_URL=http://onboarding-service:8082
+        - HUB_IA_SERVICE_URL=http://hub-ia-service:8084
     depends_on:
       - account-service
       - onboarding-service

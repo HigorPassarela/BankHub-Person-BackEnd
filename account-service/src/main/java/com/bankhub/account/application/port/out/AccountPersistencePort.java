@@ -34,4 +34,9 @@ public interface AccountPersistencePort {
      * @return Lista de contas do domínio.
      */
     List<Account> findByCustomerId(String customerId);
+
+    /**
+     * Busca uma conta apenas pelo ID (Usado para creditar o PIX no destino).
+     */
+    Optional<Account> findById(String id);
 }

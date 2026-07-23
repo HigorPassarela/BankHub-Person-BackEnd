@@ -56,6 +56,18 @@ services:
     networks:
       - bank-network
 
+  transaction-service:
+    build:
+      context: ./transaction-service
+    container_name: bank-transaction-service
+    ports:
+      - "8095:8085"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@mongodb:27017/bankhub_ledger?authSource=admin
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    networks:
+      - bank-network
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -67,6 +79,7 @@ services:
         - ACCOUNT_SERVICE_URL=http://account-service:8081
         - ONBOARDING_SERVICE_URL=http://onboarding-service:8082
         - HUB_IA_SERVICE_URL=http://hub-ia-service:8084
+        - TRANSACTION_SERVICE_URL=http://transaction-service:8085
     depends_on:
       - account-service
       - onboarding-service

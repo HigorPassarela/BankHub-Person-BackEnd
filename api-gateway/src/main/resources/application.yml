@@ -46,6 +46,11 @@ spring:
           predicates:
             - Path=/api/v1/chat/**
 
+        - id: transaction-service-route
+          uri: http://bank-transaction-service:8085
+          predicates:
+            - Path=/api/v1/transactions/**
+
 management:
   endpoints:
     web:

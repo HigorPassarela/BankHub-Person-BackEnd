@@ -60,4 +60,22 @@ public interface AccountApi {
             @Parameter(description = "ID do usuário autenticado (Injetado via API Gateway)")
             @RequestHeader("X-User-Id") String customerId
     );
+
+    @Operation(summary = "Realiza um depósito (Cash-In) em uma conta ativa.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Depósito realizado com sucesso (Retorna o novo saldo)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada ou acesso negado",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de validação (ex: conta não está ativa, valor negativo)",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/{accountId}/deposit")
+    ResponseEntity<AccountResponse> depositAccount(
+            @Parameter(description = "ID da conta que receberá o depósito")
+            @PathVariable String accountId,
+            @Parameter(description = "ID do usuário autenticado (Injetado via API Gateway)")
+            @RequestHeader("X-User-Id") String customerId,
+            @org.springframework.web.bind.annotation.RequestBody com.bankhub.account.infrastructure.web.dto.DepositRequest request
+    );
 }

@@ -16,13 +16,21 @@ public interface AccountMapper {
     AccountDocument toDocument(Account domain);
 
     default Balance toDomainBalance(BalanceModel model) {
-        if (model == null || model.getAmounts() == null) {
+        if (model == null || model.getAmount() == null) {
             return Balance.zero();
         }
-        return new Balance(model.getAmounts(), model.getCurrency());
+        return new Balance(model.getAmount(), model.getCurrency());
     }
 
-    BalanceModel toModelBalance(Balance domain);
+    default BalanceModel toModelBalance(Balance domain) {
+        if (domain == null || domain.amount() == null) {
+            return null;
+        }
+        return BalanceModel.builder()
+                .amount(domain.amount())
+                .currency(domain.currency())
+                .build();
+    }
 
     default AccountNumber toDomainAccountNumber(AccountNumberModel model) {
         if (model == null || model.getAgency() == null || model.getNumber() == null) {

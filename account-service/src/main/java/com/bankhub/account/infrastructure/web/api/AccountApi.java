@@ -78,4 +78,11 @@ public interface AccountApi {
             @RequestHeader("X-User-Id") String customerId,
             @org.springframework.web.bind.annotation.RequestBody com.bankhub.account.infrastructure.web.dto.DepositRequest request
     );
+
+    @PostMapping("/{accountId}/debit")
+    ResponseEntity<AccountResponse> debitAccount(
+            @PathVariable String accountId,
+            @RequestHeader("X-User-Id") String customerId,
+            @org.springframework.web.bind.annotation.RequestBody com.bankhub.account.infrastructure.web.dto.DebitRequest request
+    );
 }

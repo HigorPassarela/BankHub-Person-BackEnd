@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/account-service" />
             <option value="$PROJECT_DIR$/api-gateway" />
             <option value="$PROJECT_DIR$/hub-ia-service" />
+            <option value="$PROJECT_DIR$/investment-service" />
             <option value="$PROJECT_DIR$/notification-service" />
             <option value="$PROJECT_DIR$/onboarding-service" />
             <option value="$PROJECT_DIR$/transaction-service" />

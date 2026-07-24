@@ -1,6 +1,7 @@
 package com.bankhub.account.infrastructure.web.exception;
 
 import com.bankhub.account.domain.exception.AccountNotFoundException;
+import com.bankhub.account.domain.exception.InsufficientFundsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -41,6 +42,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro inesperado. Tente novamente mais tarde.");
         problemDetail.setTitle("Erro Interno do Servidor");
         problemDetail.setType(URI.create("https://bank-hub.com/errors/internal-server-error"));
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    /**
+     * Captura tentativas de débito sem saldo (PIX, Compras na Bolsa, Saques).
+     * Retorna 422 Unprocessable Entity (Sintaxe correta, mas a regra de negócio não permite).
+     */
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ProblemDetail handleInsufficientFundsException(InsufficientFundsException ex) {
+        log.warn("Exceção Contábil tratada (422): {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problemDetail.setTitle("Saldo Insuficiente");
+        problemDetail.setType(URI.create("https://bank-hub.com/errors/insufficient-funds"));
         problemDetail.setProperty("timestamp", Instant.now());
 
         return problemDetail;

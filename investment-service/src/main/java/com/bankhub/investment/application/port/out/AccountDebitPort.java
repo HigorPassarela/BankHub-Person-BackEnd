@@ -17,4 +17,9 @@ public interface AccountDebitPort {
      * @throws RuntimeException (Sinalizando recusa se a conta estiver sem saldo ou bloqueada).
      */
     void debitFunds(String accountId, String customerId, String jwtToken, BigDecimal amount);
+
+    /**
+     * Devolve o dinheiro para a conta corrente do cliente em caso de erro na compra do ativo.
+     */
+    void refundFunds(String accountId, String customerId, String jwtToken, BigDecimal amount);
 }

@@ -22,11 +22,11 @@ public class ActivateAccountService implements ActivateAccountUseCase {
 
     @Override
     @Transactional
-    public Account execute(String accountId, String customerId) {
-        log.info("Iniciando ativação da conta {} para o cliente {}", accountId, customerId);
+    public Account execute(String accountId) {
+        log.info("Iniciando ativação pública da conta {}", accountId);
 
-        Account account = persistencePort.findByIdAndCustomerId(accountId, customerId)
-                .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada ou acesso negado."));
+        Account account = persistencePort.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada. Link de ativação inválido."));
 
         if (account.status() != AccountStatus.PENDING_ACTIVATION) {
             log.warn("Tentativa de ativação inválida. A conta {} está com status {}", accountId, account.status());
@@ -34,11 +34,9 @@ public class ActivateAccountService implements ActivateAccountUseCase {
         }
 
         Account activatedAccount = account.activate();
-
         Account savedAccount = persistencePort.save(activatedAccount);
 
         log.info("Conta {} ativada com sucesso!", savedAccount.id());
-
         eventPublisher.publishEvent(new AccountStatusChangedEvent(savedAccount));
 
         return savedAccount;

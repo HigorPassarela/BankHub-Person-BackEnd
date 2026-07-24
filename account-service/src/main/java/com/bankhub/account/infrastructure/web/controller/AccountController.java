@@ -51,10 +51,11 @@ public class AccountController implements AccountApi {
     }
 
     @Override
-    public ResponseEntity<AccountResponse> activateAccount(String accountId, String customerId) {
-        log.info("Recebida requisição REST para ATIVAR a conta: {}. Titular: {}", accountId, customerId);
+    public ResponseEntity<AccountResponse> activateAccount(String accountId) {
+        log.info("Recebida requisição REST Pública para ATIVAR a conta: {}", accountId);
 
-        Account activatedAccount = activateAccountUseCase.execute(accountId, customerId);
+        // Não passamos mais o customerId, apenas o ID da conta
+        Account activatedAccount = activateAccountUseCase.execute(accountId);
         AccountResponse response = webMapper.toResponse(activatedAccount);
 
         return ResponseEntity.ok(response);

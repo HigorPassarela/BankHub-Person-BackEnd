@@ -1,5 +1,6 @@
 package com.bankhub.account.domain;
 
+import com.bankhub.account.domain.exception.InsufficientFundsException;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -65,6 +66,10 @@ public record Account(
     public Account debit(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Valor de débito deve ser maior que zero.");
+        }
+
+        if (this.balance.amount().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Saldo insuficiente para realizar esta operação.");
         }
 
         Balance newBalance = new Balance(this.balance.amount().subtract(amount), this.balance.currency());

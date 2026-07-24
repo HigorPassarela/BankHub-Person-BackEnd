@@ -33,4 +33,19 @@ public class AccountDebitAdapter implements AccountDebitPort {
             throw new IllegalStateException("O banco recusou o débito. Verifique seu saldo ou o status da sua conta.");
         }
     }
+
+    @Override
+    public void refundFunds(String accountId, String customerId, String jwtToken, BigDecimal amount) {
+        log.warn("Saga Compensation: Solicitando estorno de R$ {} para a conta {}.", amount, accountId);
+        try {
+            DebitRequest payload = new DebitRequest(amount);
+            String bearerToken = "Bearer " + jwtToken;
+
+            feignClient.refundAccount(accountId, customerId, bearerToken, payload);
+
+            log.info("Saga Compensation: Estorno concluído. O dinheiro retornou à conta.");
+        } catch (Exception e) {
+            log.error("FALHA CRÍTICA NO ESTORNO! Intervenção manual requerida. Conta: {}, Erro: {}", accountId, e.getMessage());
+        }
+    }
 }

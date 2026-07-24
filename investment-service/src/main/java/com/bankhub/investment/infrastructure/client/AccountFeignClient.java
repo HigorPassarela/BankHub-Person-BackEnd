@@ -24,4 +24,12 @@ public interface AccountFeignClient {
             @RequestHeader("Authorization") String token,
             @RequestBody DebitRequest request
     );
+
+    @PostMapping("/api/v1/accounts/{accountId}/deposit")
+    void refundAccount(
+            @PathVariable("accountId") String accountId,
+            @RequestHeader("X-User-Id") String customerId,
+            @RequestHeader("Authorization") String token,
+            @RequestBody DebitRequest request
+    );
 }

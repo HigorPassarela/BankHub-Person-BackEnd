@@ -68,6 +68,18 @@ services:
     networks:
       - bank-network
 
+  investment-service:
+    build:
+      context: ./investment-service
+    container_name: bank-investment-service
+    ports:
+      - "8096:8086"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@mongodb:27017/bankhub_investments?authSource=admin
+      - BANKHUB_SERVICES_ACCOUNT_URL=http://account-service:8081
+    networks:
+      - bank-network
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -76,13 +88,11 @@ services:
       - "8080:8080"
     environment:
       - SPRING_DATA_REDIS_HOST=redis
-        - ACCOUNT_SERVICE_URL=http://account-service:8081
-        - ONBOARDING_SERVICE_URL=http://onboarding-service:8082
-        - HUB_IA_SERVICE_URL=http://hub-ia-service:8084
-        - TRANSACTION_SERVICE_URL=http://transaction-service:8085
     depends_on:
       - account-service
       - onboarding-service
       - hub-ia-service
+      - transaction-service
+      - investment-service
     networks:
       - bank-network

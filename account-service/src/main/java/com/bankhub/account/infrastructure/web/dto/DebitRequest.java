@@ -1,0 +1,13 @@
+package com.bankhub.account.infrastructure.web.dto;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
+
+public record DebitRequest(
+        @NotNull(message = "O valor do débito é obrigatório.")
+        @DecimalMin(value = "0.01", message = "O valor do débito deve ser maior que zero.")
+        BigDecimal amount
+) {
+}

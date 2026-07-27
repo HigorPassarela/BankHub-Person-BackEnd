@@ -11,9 +11,8 @@ public interface ActivateAccountUseCase {
      * Valida e ativa uma conta bancária que estava pendente de confirmação.
      *
      * @param accountId ID da conta a ser ativada.
-     * @param customerId ID do cliente titular (Extraído do Token JWT).
      * @return A entidade de Domínio 'Account' atualizada com o novo status.
      */
-    Account execute(String accountId, String customerId);
+    Account execute(String accountId);
 
 }

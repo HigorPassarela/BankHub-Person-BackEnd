@@ -1,6 +1,8 @@
 package com.bankhub.account.infrastructure.web.api;
 
 import com.bankhub.account.infrastructure.web.dto.AccountResponse;
+import com.bankhub.account.infrastructure.web.dto.DebitRequest;
+import com.bankhub.account.infrastructure.web.dto.DepositRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,7 +12,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping("/api/v1/accounts")
 @Tag(name = "Account", description = "Operações de Gerenciamento de Contas e Ciclo de Vida (Bank-Hub)")
@@ -46,19 +53,14 @@ public interface AccountApi {
 
     @Operation(summary = "Ativa uma conta pendente, liberando-a para transações e Inteligência Artificial.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Conta ativada com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Conta não encontrada ou pertence a outro cliente",
-                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "400", description = "Conta já está ativa ou bloqueada",
-                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+            @ApiResponse(responseCode = "200", description = "Conta ativada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada"),
+            @ApiResponse(responseCode = "400", description = "Conta já está ativa ou bloqueada")
     })
     @PostMapping("/{accountId}/activate")
     ResponseEntity<AccountResponse> activateAccount(
-            @Parameter(description = "ID da conta que deseja ativar")
-            @PathVariable String accountId,
-            @Parameter(description = "ID do usuário autenticado (Injetado via API Gateway)")
-            @RequestHeader("X-User-Id") String customerId
+            @Parameter(description = "ID interno da conta que deseja ativar")
+            @PathVariable String accountId
     );
 
     @Operation(summary = "Realiza um depósito (Cash-In) em uma conta ativa.")
@@ -76,13 +78,13 @@ public interface AccountApi {
             @PathVariable String accountId,
             @Parameter(description = "ID do usuário autenticado (Injetado via API Gateway)")
             @RequestHeader("X-User-Id") String customerId,
-            @org.springframework.web.bind.annotation.RequestBody com.bankhub.account.infrastructure.web.dto.DepositRequest request
+            @RequestBody DepositRequest request
     );
 
     @PostMapping("/{accountId}/debit")
     ResponseEntity<AccountResponse> debitAccount(
             @PathVariable String accountId,
             @RequestHeader("X-User-Id") String customerId,
-            @org.springframework.web.bind.annotation.RequestBody com.bankhub.account.infrastructure.web.dto.DebitRequest request
+            @RequestBody DebitRequest request
     );
 }

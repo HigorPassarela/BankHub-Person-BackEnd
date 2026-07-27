@@ -26,13 +26,13 @@ public class AccountEventListener {
             String eventType = message.header().eventType();
             String accountId = message.payload().accountId();
             String status = message.payload().status();
-
             String agency = message.payload().agency();
             String accountNumber = message.payload().accountNumber();
+            String activationToken = message.payload().activationToken();
 
             log.info("Acionando caso de uso para a Conta: {} | Evento: {}", accountId, eventType);
 
-            sendNotificationUseCase.execute(accountId, eventType, status, agency, accountNumber);
+            sendNotificationUseCase.execute(accountId, eventType, status, agency, accountNumber, activationToken);
 
         } catch (Exception e) {
             log.error("Erro inesperado ao processar evento Kafka para notificação: {}", e.getMessage(), e);

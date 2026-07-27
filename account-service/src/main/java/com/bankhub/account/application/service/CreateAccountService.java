@@ -2,6 +2,7 @@ package com.bankhub.account.application.service;
 
 import com.bankhub.account.application.port.in.CreateAccountUseCase;
 import com.bankhub.account.application.port.out.AccountPersistencePort;
+import com.bankhub.account.application.port.out.AccountTokenPort;
 import com.bankhub.account.domain.Account;
 import com.bankhub.account.domain.AccountNumber;
 import com.bankhub.account.domain.AccountStatus;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class CreateAccountService implements CreateAccountUseCase {
 
     private final AccountPersistencePort persistencePort;
+    private final AccountTokenPort tokenPort;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -40,25 +42,19 @@ public class CreateAccountService implements CreateAccountUseCase {
 
         Account savedAccount = persistencePort.save(newAccount);
 
-        log.info("Conta criada no banco aguardando ativação. ID Interno: {}, Ag/Conta: {}, Status: {}",
-                savedAccount.id(), savedAccount.accountNumber().getFormatted(), savedAccount.status());
+        log.info("Conta criada no banco. ID Interno: {}, Ag/Conta: {}", savedAccount.id(), savedAccount.accountNumber().getFormatted());
 
-        eventPublisher.publishEvent(new AccountCreatedEvent(savedAccount));
+        String activationToken = tokenPort.generateAndSaveToken(savedAccount.id());
+
+        eventPublisher.publishEvent(new AccountCreatedEvent(savedAccount, activationToken));
 
         return savedAccount;
     }
 
-    /**
-     * Gera um número de conta e agência simulando uma emissão bancária real.
-     */
     private AccountNumber generateBankCoordinates() {
         String defaultAgency = "0001";
-
         String uniqueHash = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         int digit = new Random().nextInt(10);
-
-        String formattedAccount = String.format("%s-%d", uniqueHash, digit);
-
-        return new AccountNumber(defaultAgency, formattedAccount);
+        return new AccountNumber(defaultAgency, String.format("%s-%d", uniqueHash, digit));
     }
 }

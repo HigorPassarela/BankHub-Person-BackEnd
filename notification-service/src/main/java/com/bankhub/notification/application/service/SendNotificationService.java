@@ -14,13 +14,13 @@ public class SendNotificationService implements SendNotificationUseCase {
     private final EmailNotificationPort emailPort;
 
     @Override
-    public void execute(String accountId, String eventType, String status, String agency, String accountNumber) {
+    public void execute(String accountId, String eventType, String status, String agency, String accountNumber, String activationToken) {
         log.info("Orquestrando notificação em HTML para a conta: {}, Evento: {}", accountId, eventType);
 
         String customerEmail = "cliente-" + accountId + "@bankhub.local";
         String subject = formatSubject(eventType);
 
-        String htmlBody = formatHtmlBody(accountId, eventType, status, agency, accountNumber);
+        String htmlBody = formatHtmlBody(accountId, eventType, status, agency, accountNumber, activationToken);
 
         emailPort.sendHtmlEmail(customerEmail, subject, htmlBody);
 
@@ -42,8 +42,9 @@ public class SendNotificationService implements SendNotificationUseCase {
      * Template HTML responsivo e com design corporativo de banco digital.
      * Incorpora a visão da Season 2 (Botão para criar senha).
      */
-    private String formatHtmlBody(String accountId, String eventType, String status, String agency, String accountNumber) {
-        String activationLink = "http://bank-hub.com/ativar/" + accountId;
+    private String formatHtmlBody(String accountId, String eventType, String status, String agency, String accountNumber, String activationToken) {
+
+        String activationLink = "http://localhost:3000/ativacao?token=" + activationToken;
 
         return String.format("""
             <!DOCTYPE html>
@@ -77,15 +78,15 @@ public class SendNotificationService implements SendNotificationUseCase {
                             <strong>Ação do Sistema:</strong> %s
                         </div>
                         
-                        <p>Para começarmos a investir na Bolsa de Valores, comprar CDBs e realizar PIX ilimitados, precisamos apenas do último passo de segurança.</p>
+                        <p>Para começarmos a investir na Bolsa de Valores e realizar PIX, precisamos apenas do último passo de segurança.</p>
                         
                         <a href="%s" class="button">Criar Minha Senha</a>
                         
                         <p>Caso o botão acima não funcione, copie e cole este link no seu navegador: <br> <a href="%s" style="color: #6c5ce7; word-break: break-all;">%s</a></p>
                     </div>
                     <div class="footer">
-                        <p>Se você não solicitou a abertura desta conta, por favor ignore este e-mail.</p>
-                        <p>&copy; 2026 Bank-Hub Ecossistema Digital. Todos os direitos reservados.</p>
+                        <p>Este link expira em 24 horas.</p>
+                        <p>&copy; 2026 Bank-Hub Ecossistema Digital.</p>
                     </div>
                 </div>
             </body>

@@ -44,6 +44,7 @@ public class AccountEventPublisher {
                         .status(event.account().status().name())
                         .agency(agency)
                         .accountNumber(number)
+                        .activationToken(event.activationToken())
                         .build())
                 .build();
 

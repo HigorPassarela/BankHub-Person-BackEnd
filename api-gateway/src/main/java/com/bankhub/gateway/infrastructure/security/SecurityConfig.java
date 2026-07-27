@@ -18,11 +18,13 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/actuator/health").permitAll()
 
-                        .pathMatchers("/api/v1/accounts/*/activate").permitAll()
+                        .pathMatchers("/api/v1/onboarding/**").permitAll()
+                        .pathMatchers("/api/v1/accounts/activate").permitAll()
 
                         .anyExchange().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(Customizer.withDefaults())
                 );
 
         return http.build();

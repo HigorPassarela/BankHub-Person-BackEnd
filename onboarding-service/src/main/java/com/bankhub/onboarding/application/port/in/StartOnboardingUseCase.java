@@ -10,10 +10,9 @@ public interface StartOnboardingUseCase {
     /**
      * Inicia a esteira de aprovação do cliente.
      *
-     * @param customerId     ID do usuário (proveniente do token de segurança).
      * @param documentNumber Documento do cliente (CPF/CNPJ).
      * @param monthlyIncome  Renda mensal declarada pelo cliente.
      * @return O número de protocolo (ID da instância do processo no orquestrador).
      */
-    String execute(String customerId, String documentNumber, BigDecimal monthlyIncome);
+    String execute(String documentNumber, BigDecimal monthlyIncome);
 }

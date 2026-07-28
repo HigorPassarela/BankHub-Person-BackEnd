@@ -51,16 +51,18 @@ public interface AccountApi {
             @RequestHeader("X-User-Id") String customerId
     );
 
-    @Operation(summary = "Ativa uma conta pendente, liberando-a para transações e Inteligência Artificial.")
+    @Operation(summary = "Ativa uma conta pendente validando o Token Temporário (Magic Link).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Conta ativada com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Conta não encontrada"),
-            @ApiResponse(responseCode = "400", description = "Conta já está ativa ou bloqueada")
+            @ApiResponse(responseCode = "200", description = "Conta ativada com sucesso. Retorna Agência e Conta.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Token de ativação inválido, expirado ou não encontrado.",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "400", description = "A conta já está ativa ou bloqueada.",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @PostMapping("/{accountId}/activate")
+    @PostMapping("/activate")
     ResponseEntity<AccountResponse> activateAccount(
-            @Parameter(description = "ID interno da conta que deseja ativar")
-            @PathVariable String accountId
+            @org.springframework.web.bind.annotation.RequestBody com.bankhub.account.infrastructure.web.dto.ActivationRequest request
     );
 
     @Operation(summary = "Realiza um depósito (Cash-In) em uma conta ativa.")

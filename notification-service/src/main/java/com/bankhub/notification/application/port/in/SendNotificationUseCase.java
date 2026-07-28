@@ -14,6 +14,6 @@ public interface SendNotificationUseCase {
      * @param agency Agência da conta.
      * @param accountNumber Número amigável da conta.
      */
-    void execute(String accountId, String eventType, String status, String agency, String accountNumber);
+    void execute(String accountId, String eventType, String status, String agency, String accountNumber, String activationToken);
 
 }

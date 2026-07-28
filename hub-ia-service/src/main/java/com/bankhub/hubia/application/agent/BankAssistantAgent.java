@@ -18,7 +18,7 @@ public interface BankAssistantAgent {
     })
     String chat(
             @MemoryId String memoryId,
-            @V("accountContext") String accountContext, // NOVO: O dado mastigado
+            @V("accountContext") String accountContext,
             @UserMessage String userMessage
     );
 }

@@ -4,7 +4,6 @@ import com.bankhub.onboarding.application.port.in.StartOnboardingUseCase;
 import com.bankhub.onboarding.infrastructure.web.dto.OnboardingRequest;
 import com.bankhub.onboarding.infrastructure.web.dto.OnboardingResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,18 +24,13 @@ public class OnboardingController {
     private final StartOnboardingUseCase startOnboardingUseCase;
 
     @PostMapping
-    @Operation(summary = "Inicia o processo assíncrono de análise de risco e provisionamento de conta.")
+    @Operation(summary = "Inicia o processo assíncrono de análise de risco para um visitante.")
     public ResponseEntity<OnboardingResponse> startOnboarding(
-            @Parameter(hidden = true, description = "Injetado via API Gateway")
-            @RequestHeader("X-User-Id") String customerId,
+            @Valid @RequestBody OnboardingRequest request) {
 
-            @Valid @RequestBody OnboardingRequest request
-    ) {
-
-        log.info("Recebida requisição REST para iniciar Onboarding. Titular: {}", customerId);
+        log.info("Recebida requisição REST de Visitante para iniciar Onboarding. Documento: {}", request.documentNumber());
 
         String protocolNumber = startOnboardingUseCase.execute(
-                customerId,
                 request.documentNumber(),
                 request.monthlyIncome()
         );

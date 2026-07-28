@@ -51,11 +51,11 @@ public class AccountController implements AccountApi {
     }
 
     @Override
-    public ResponseEntity<AccountResponse> activateAccount(String accountId) {
-        log.info("Recebida requisição REST Pública para ATIVAR a conta: {}", accountId);
+    public ResponseEntity<AccountResponse> activateAccount(@Valid @RequestBody com.bankhub.account.infrastructure.web.dto.ActivationRequest request) {
+        log.info("Recebida requisição REST Pública para ATIVAR conta via Magic Link Token.");
 
-        // Não passamos mais o customerId, apenas o ID da conta
-        Account activatedAccount = activateAccountUseCase.execute(accountId);
+        Account activatedAccount = activateAccountUseCase.execute(request.token());
+
         AccountResponse response = webMapper.toResponse(activatedAccount);
 
         return ResponseEntity.ok(response);

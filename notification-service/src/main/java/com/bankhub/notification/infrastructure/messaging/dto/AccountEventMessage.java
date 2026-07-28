@@ -21,7 +21,8 @@ public record AccountEventMessage(
             String accountId,
             String status,
             String agency,
-            String accountNumber
+            String accountNumber,
+            String activationToken
     ) {
     }
 }

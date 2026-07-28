@@ -1,0 +1,36 @@
+{
+  "name": "Bank-Hub Core Backend",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "true"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "jdkDistro": "temurin"
+    }
+  },
+  "forwardPorts": [8080, 9000],
+  "portsAttributes": {
+    "8080": {
+      "label": "API Gateway",
+      "onAutoForward": "notify"
+    },
+    "9000": {
+      "label": "Keycloak (Auth Server)",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "./gradlew clean bootJar --no-build-cache && docker-compose -f docker-compose-infra.yml up -d && docker-compose -f docker-compose-apps.yml up -d",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-spring-boot-dashboard",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

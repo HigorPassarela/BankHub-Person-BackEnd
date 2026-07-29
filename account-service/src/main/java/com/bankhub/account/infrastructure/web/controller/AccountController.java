@@ -2,13 +2,16 @@ package com.bankhub.account.infrastructure.web.controller;
 
 import com.bankhub.account.application.port.in.ActivateAccountUseCase;
 import com.bankhub.account.application.port.in.CreateAccountUseCase;
+import com.bankhub.account.application.port.in.CreateTransactionPinUseCase;
 import com.bankhub.account.application.port.in.DebitAccountUseCase;
 import com.bankhub.account.application.port.in.DepositAccountUseCase;
 import com.bankhub.account.application.port.in.FindAccountUseCase;
+import com.bankhub.account.application.port.in.UploadSelfieUseCase;
 import com.bankhub.account.domain.Account;
 import com.bankhub.account.infrastructure.web.api.AccountApi;
 import com.bankhub.account.infrastructure.web.dto.AccountResponse;
 import com.bankhub.account.infrastructure.web.dto.DebitRequest;
+import com.bankhub.account.infrastructure.web.dto.PinRequest;
 import com.bankhub.account.infrastructure.web.mapper.AccountWebMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -24,10 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountController implements AccountApi {
 
     private final CreateAccountUseCase createAccountUseCase;
+    private final CreateTransactionPinUseCase createTransactionPinUseCase;
     private final FindAccountUseCase findAccountUseCase;
     private final ActivateAccountUseCase activateAccountUseCase;
     private final DepositAccountUseCase depositAccountUseCase;
     private final DebitAccountUseCase debitAccountUseCase;
+    private final UploadSelfieUseCase uploadSelfieUseCase;
     private final AccountWebMapper webMapper;
 
     @Override
@@ -77,6 +83,27 @@ public class AccountController implements AccountApi {
 
         Account richAccount = debitAccountUseCase.execute(accountId, customerId, request.amount());
         AccountResponse response = webMapper.toResponse(richAccount);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<AccountResponse> createTransactionPin(String accountId, String customerId, @Valid @RequestBody PinRequest request) {
+        log.info("Recebida requisição REST para cadastrar PIN Transacional. Conta: {}", accountId);
+
+        Account securedAccount = createTransactionPinUseCase.execute(accountId, customerId, request.transactionPin());
+
+        AccountResponse response = webMapper.toResponse(securedAccount);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<AccountResponse> uploadSelfie(String accountId, String customerId, MultipartFile file) {
+        log.info("Recebida requisição REST de Upload de Selfie (KYC). Conta: {}", accountId);
+
+        Account verifiedAccount = uploadSelfieUseCase.execute(accountId, customerId, file);
+        AccountResponse response = webMapper.toResponse(verifiedAccount);
 
         return ResponseEntity.ok(response);
     }

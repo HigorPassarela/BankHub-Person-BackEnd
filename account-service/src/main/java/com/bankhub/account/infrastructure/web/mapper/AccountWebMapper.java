@@ -10,12 +10,18 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface AccountWebMapper {
 
+    default boolean hasTransactionPin(Account domain) {
+        return domain.transactionPinHash() != null && !domain.transactionPinHash().isBlank();
+    }
+
     /**
      * Mapeia a Entidade Rica de Domínio para o DTO de saída REST.
      */
     @Mapping(source = "id", target = "account")
     @Mapping(source = "accountNumber", target = "bankDetails")
     @Mapping(source = "updatedAt", target = "lastUpdate")
+    @Mapping(target = "hasTransactionPin", expression = "java(hasTransactionPin(domain))")
+    @Mapping(source = "isIdentityVerified", target = "identityVerified")
     AccountResponse toResponse(Account domain);
 
     /**

@@ -1,8 +1,10 @@
 package com.bankhub.account.infrastructure.web.api;
 
 import com.bankhub.account.infrastructure.web.dto.AccountResponse;
+import com.bankhub.account.infrastructure.web.dto.ActivationRequest;
 import com.bankhub.account.infrastructure.web.dto.DebitRequest;
 import com.bankhub.account.infrastructure.web.dto.DepositRequest;
+import com.bankhub.account.infrastructure.web.dto.PinRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping("/api/v1/accounts")
 @Tag(name = "Account", description = "Operações de Gerenciamento de Contas e Ciclo de Vida (Bank-Hub)")
@@ -62,7 +67,7 @@ public interface AccountApi {
     })
     @PostMapping("/activate")
     ResponseEntity<AccountResponse> activateAccount(
-            @org.springframework.web.bind.annotation.RequestBody com.bankhub.account.infrastructure.web.dto.ActivationRequest request
+            @RequestBody ActivationRequest request
     );
 
     @Operation(summary = "Realiza um depósito (Cash-In) em uma conta ativa.")
@@ -88,5 +93,40 @@ public interface AccountApi {
             @PathVariable String accountId,
             @RequestHeader("X-User-Id") String customerId,
             @RequestBody DebitRequest request
+    );
+
+    @Operation(summary = "Cadastra ou altera o PIN Transacional (4 dígitos) de uma conta.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "PIN cadastrado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada ou acesso negado",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "400", description = "O PIN informado não atende aos requisitos (4 dígitos)",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/{accountId}/pin")
+    ResponseEntity<AccountResponse> createTransactionPin(
+            @Parameter(description = "ID da conta")
+            @PathVariable String accountId,
+            @Parameter(description = "ID do usuário (Segurança Zero Trust)")
+            @RequestHeader("X-User-Id") String customerId,
+            @RequestBody PinRequest request
+    );
+
+    @Operation(summary = "Realiza o upload da selfie do usuário para aprovação do KYC.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "KYC aprovado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Arquivo inválido ou ausente",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping(value = "/{accountId}/kyc/selfie", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<AccountResponse> uploadSelfie(
+            @Parameter(description = "ID da conta")
+            @PathVariable String accountId,
+            @Parameter(description = "ID do usuário (Segurança Zero Trust)")
+            @RequestHeader("X-User-Id") String customerId,
+            @Parameter(description = "Arquivo de imagem (JPEG/PNG)")
+            @RequestPart("file") MultipartFile file
     );
 }

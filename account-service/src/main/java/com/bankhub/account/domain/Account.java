@@ -14,6 +14,9 @@ public record Account(
         Balance balance,
         AccountStatus status,
         Long version,
+        String transactionPinHash,
+        boolean isIdentityVerified,
+        String selfieUrl,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -26,6 +29,9 @@ public record Account(
                 .balance(this.balance)
                 .status(AccountStatus.ACTIVE)
                 .version(this.version)
+                .transactionPinHash(this.transactionPinHash)
+                .isIdentityVerified(this.isIdentityVerified)
+                .selfieUrl(this.selfieUrl)
                 .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -39,6 +45,9 @@ public record Account(
                 .balance(this.balance)
                 .status(AccountStatus.BLOCKED)
                 .version(this.version)
+                .transactionPinHash(this.transactionPinHash)
+                .isIdentityVerified(this.isIdentityVerified)
+                .selfieUrl(this.selfieUrl)
                 .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -58,6 +67,9 @@ public record Account(
                 .balance(newBalance)
                 .status(this.status)
                 .version(this.version)
+                .transactionPinHash(this.transactionPinHash)
+                .isIdentityVerified(this.isIdentityVerified)
+                .selfieUrl(this.selfieUrl)
                 .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -81,6 +93,41 @@ public record Account(
                 .balance(newBalance)
                 .status(this.status)
                 .version(this.version)
+                .transactionPinHash(this.transactionPinHash)
+                .isIdentityVerified(this.isIdentityVerified)
+                .selfieUrl(this.selfieUrl)
+                .createdAt(this.createdAt)
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public Account approveKyc(String savedSelfieUrl) {
+        return Account.builder()
+                .id(this.id)
+                .customerId(this.customerId)
+                .accountNumber(this.accountNumber)
+                .balance(this.balance)
+                .status(this.status)
+                .version(this.version)
+                .transactionPinHash(this.transactionPinHash)
+                .isIdentityVerified(true)
+                .selfieUrl(savedSelfieUrl)
+                .createdAt(this.createdAt)
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public Account updateTransactionPin(String newHashedPin) {
+        return Account.builder()
+                .id(this.id)
+                .customerId(this.customerId)
+                .accountNumber(this.accountNumber)
+                .balance(this.balance)
+                .status(this.status)
+                .version(this.version)
+                .transactionPinHash(newHashedPin)
+                .isIdentityVerified(this.isIdentityVerified)
+                .selfieUrl(this.selfieUrl)
                 .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
                 .build();

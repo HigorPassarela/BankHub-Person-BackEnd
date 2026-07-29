@@ -11,6 +11,9 @@ public record AccountResponse(
         BankDetailsResponse bankDetails,
         BalanceResponse balance,
         String status,
+        boolean hasTransactionPin,
+        boolean identityVerified,
+        String selfieUrl,
         LocalDateTime lastUpdate
 ) {
 
@@ -18,15 +21,13 @@ public record AccountResponse(
     public record BankDetailsResponse(
             String agency,
             String number
-    ){}
+    ) {
+    }
 
-    /**
-     * DTO aninhado para representar o bloco do saldo conforme contrato JSON:
-     * { "valor": 1500.50, "moeda": "BRL" }
-     */
     @Builder
     public record BalanceResponse(
-       BigDecimal valor,
-       String moeda
-    ) {}
+            BigDecimal valor,
+            String moeda
+    ) {
+    }
 }

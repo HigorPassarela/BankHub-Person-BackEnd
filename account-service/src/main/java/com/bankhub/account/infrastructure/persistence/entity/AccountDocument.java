@@ -28,10 +28,12 @@ public class AccountDocument {
     private String customerId;
 
     private AccountNumberModel accountNumber;
-
     private BalanceModel balance;
-
     private AccountStatus status;
+
+    private String transactionPinHash;
+    private boolean isIdentityVerified;
+    private String selfieUrl;
 
     @Version
     private Long version;

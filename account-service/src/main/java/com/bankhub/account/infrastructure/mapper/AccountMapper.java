@@ -11,9 +11,45 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
 
-    Account toDomain(AccountDocument document);
+    default Account toDomain(AccountDocument document) {
+        if (document == null) {
+            return null;
+        }
 
-    AccountDocument toDocument(Account domain);
+        return Account.builder()
+                .id(document.getId())
+                .customerId(document.getCustomerId())
+                .accountNumber(toDomainAccountNumber(document.getAccountNumber()))
+                .balance(toDomainBalance(document.getBalance()))
+                .status(document.getStatus())
+                .transactionPinHash(document.getTransactionPinHash())
+                .isIdentityVerified(document.isIdentityVerified())
+                .selfieUrl(document.getSelfieUrl())
+                .version(document.getVersion())
+                .createdAt(document.getCreatedAt())
+                .updatedAt(document.getUpdatedAt())
+                .build();
+    }
+
+    default AccountDocument toDocument(Account domain) {
+        if (domain == null) {
+            return null;
+        }
+
+        return AccountDocument.builder()
+                .id(domain.id())
+                .customerId(domain.customerId())
+                .accountNumber(toModelAccountNumber(domain.accountNumber()))
+                .balance(toModelBalance(domain.balance()))
+                .status(domain.status())
+                .transactionPinHash(domain.transactionPinHash())
+                .isIdentityVerified(domain.isIdentityVerified())
+                .selfieUrl(domain.selfieUrl())
+                .version(domain.version())
+                .createdAt(domain.createdAt())
+                .updatedAt(domain.updatedAt())
+                .build();
+    }
 
     default Balance toDomainBalance(BalanceModel model) {
         if (model == null || model.getAmount() == null) {

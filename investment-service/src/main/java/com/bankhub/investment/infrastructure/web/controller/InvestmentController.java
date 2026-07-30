@@ -34,23 +34,16 @@ public class InvestmentController {
     public ResponseEntity<PortfolioResponse> buyAsset(
             @Parameter(description = "ID do usuário (Segurança)", hidden = true)
             @RequestHeader("X-User-Id") String customerId,
-
-            @Parameter(description = "JWT Token", hidden = true)
-            @RequestHeader("Authorization") String jwtToken,
-
             @Valid @RequestBody BuyAssetRequest request) {
 
         log.info("Recebida requisição REST de Compra de Ativo. Cliente: {}, Ticker: {}", customerId, request.ticker());
-
-        String rawToken = (jwtToken != null && jwtToken.startsWith("Bearer ")) ? jwtToken.substring(7) : jwtToken;
 
         Portfolio portfolio = buyAssetUseCase.execute(
                 customerId,
                 request.accountId(),
                 request.ticker(),
                 request.type(),
-                request.quantity(),
-                rawToken
+                request.quantity()
         );
 
         PortfolioResponse response = webMapper.toResponse(portfolio);

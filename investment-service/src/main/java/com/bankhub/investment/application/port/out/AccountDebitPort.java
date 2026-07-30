@@ -10,16 +10,15 @@ public interface AccountDebitPort {
     /**
      * Tenta descontar fundos do cliente no serviço central de contas.
      *
-     * @param accountId ID da conta a ser debitada.
+     * @param accountId  ID da conta a ser debitada.
      * @param customerId ID do cliente (Dono da conta).
-     * @param jwtToken O token criptografado para propagar a segurança Zero Trust.
-     * @param amount Quantia a ser cobrada.
+     * @param amount     Quantia a ser cobrada.
      * @throws RuntimeException (Sinalizando recusa se a conta estiver sem saldo ou bloqueada).
      */
-    void debitFunds(String accountId, String customerId, String jwtToken, BigDecimal amount);
+    void debitFunds(String accountId, String customerId, BigDecimal amount);
 
     /**
      * Devolve o dinheiro para a conta corrente do cliente em caso de erro na compra do ativo.
      */
-    void refundFunds(String accountId, String customerId, String jwtToken, BigDecimal amount);
+    void refundFunds(String accountId, String customerId, BigDecimal amount);
 }

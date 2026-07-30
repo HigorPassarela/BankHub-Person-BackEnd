@@ -17,15 +17,13 @@ public class AccountDebitAdapter implements AccountDebitPort {
     private final AccountFeignClient feignClient;
 
     @Override
-    public void debitFunds(String accountId, String customerId, String jwtToken, BigDecimal amount) {
+    public void debitFunds(String accountId, String customerId, BigDecimal amount) {
         log.info("Adapter: Solicitando débito de R$ {} na conta {} para compra de ativos.", amount, accountId);
 
         try {
             DebitRequest payload = new DebitRequest(amount);
 
-            String bearerToken = "Bearer " + jwtToken;
-
-            feignClient.debitAccount(accountId, customerId, bearerToken, payload);
+            feignClient.debitAccount(accountId, customerId, payload);
 
             log.info("Débito autorizado com sucesso pelo Account Service.");
         } catch (Exception e) {
@@ -35,13 +33,12 @@ public class AccountDebitAdapter implements AccountDebitPort {
     }
 
     @Override
-    public void refundFunds(String accountId, String customerId, String jwtToken, BigDecimal amount) {
+    public void refundFunds(String accountId, String customerId, BigDecimal amount) {
         log.warn("Saga Compensation: Solicitando estorno de R$ {} para a conta {}.", amount, accountId);
         try {
             DebitRequest payload = new DebitRequest(amount);
-            String bearerToken = "Bearer " + jwtToken;
 
-            feignClient.refundAccount(accountId, customerId, bearerToken, payload);
+            feignClient.refundAccount(accountId, customerId, payload);
 
             log.info("Saga Compensation: Estorno concluído. O dinheiro retornou à conta.");
         } catch (Exception e) {

@@ -13,5 +13,5 @@ public interface ResolvePixKeyUseCase {
      * @param pixKey A chave (CPF, E-mail, Celular ou Aleatória).
      * @return DTO com o nome e as coordenadas bancárias.
      */
-    PixKeyResolveResponse execute(String pixKey, String jwtToken);
+    PixKeyResolveResponse execute(String pixKey);
 }

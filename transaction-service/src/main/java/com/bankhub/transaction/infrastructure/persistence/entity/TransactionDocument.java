@@ -1,5 +1,6 @@
 package com.bankhub.transaction.infrastructure.persistence.entity;
 
+import com.bankhub.transaction.domain.TransactionCategory;
 import com.bankhub.transaction.domain.TransactionStatus;
 import com.bankhub.transaction.domain.TransactionType;
 import lombok.AllArgsConstructor;
@@ -39,6 +40,8 @@ public class TransactionDocument {
     private TransactionType type;
 
     private TransactionStatus status;
+
+    private TransactionCategory category;
 
     private String failureReason;
 

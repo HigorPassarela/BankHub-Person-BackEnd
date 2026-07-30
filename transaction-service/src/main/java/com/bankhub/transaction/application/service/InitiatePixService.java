@@ -4,8 +4,12 @@ import com.bankhub.transaction.application.port.in.InitiatePixUseCase;
 import com.bankhub.transaction.application.port.out.TransactionEventPublisherPort;
 import com.bankhub.transaction.application.port.out.TransactionPersistencePort;
 import com.bankhub.transaction.domain.Transaction;
+import com.bankhub.transaction.domain.TransactionCategory;
 import com.bankhub.transaction.domain.TransactionStatus;
 import com.bankhub.transaction.domain.TransactionType;
+import com.bankhub.transaction.infrastructure.client.AccountFeignClient;
+import com.bankhub.transaction.infrastructure.client.dto.PinValidationRequest;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,12 +24,37 @@ public class InitiatePixService implements InitiatePixUseCase {
 
     private final TransactionPersistencePort persistencePort;
     private final TransactionEventPublisherPort eventPublisherPort;
+    private final AccountFeignClient accountFeignClient;
 
     @Override
     @Transactional
-    public Transaction execute(String sourceAccountId, String destinationAccountId, BigDecimal amount) {
+    public Transaction execute(String sourceAccountId, String destinationAccountId, BigDecimal amount, String transactionPin, String jwtToken, String category) {
         log.info("Iniciando Transação PIX. Origem: {}, Destino: {}, Valor: {}",
                 sourceAccountId, destinationAccountId, amount);
+
+        String bearerToken = jwtToken.startsWith("Bearer ") ? jwtToken : "Bearer " + jwtToken;
+
+        try {
+            log.info("Acionando Account Service para validação de KYC e Senha Transacional...");
+
+            accountFeignClient.validateTransaction(sourceAccountId, sourceAccountId, bearerToken, new PinValidationRequest(transactionPin));
+            log.info("Validação de segurança aprovada! Autorizando PIX.");
+        } catch (FeignException.Forbidden | FeignException.NotFound e) {
+            log.warn("Falha de Segurança: O Account Service recusou a transação. Motivo do Feign: {}", e.getMessage());
+            throw new SecurityException("Transação negada: A sua senha está incorreta ou o KYC (Selfie) está pendente.");
+        } catch (Exception e) {
+            log.error("Erro na comunicação M2M com Account Service: {}", e.getMessage());
+            throw new IllegalStateException("O serviço de validação do banco está indisponível. Tente novamente em instantes.");
+        }
+
+        TransactionCategory resolvedCategory = TransactionCategory.OTHER;
+        if (category != null && !category.isBlank()) {
+            try {
+                resolvedCategory = TransactionCategory.valueOf(category.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Categoria enviada pelo Front [{}] é inválida. Assumindo OTHER.", category);
+            }
+        }
 
         Transaction newTransaction = Transaction.builder()
                 .sourceAccountId(sourceAccountId)
@@ -33,6 +62,7 @@ public class InitiatePixService implements InitiatePixUseCase {
                 .amount(amount)
                 .type(TransactionType.INTERNAL_TRANSFER)
                 .status(TransactionStatus.PENDING)
+                .category(resolvedCategory)
                 .build();
 
         Transaction savedTransaction = persistencePort.save(newTransaction);

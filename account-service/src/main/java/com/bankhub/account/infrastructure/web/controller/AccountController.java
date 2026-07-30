@@ -6,9 +6,11 @@ import com.bankhub.account.application.port.in.CreateTransactionPinUseCase;
 import com.bankhub.account.application.port.in.DebitAccountUseCase;
 import com.bankhub.account.application.port.in.DepositAccountUseCase;
 import com.bankhub.account.application.port.in.FindAccountUseCase;
+import com.bankhub.account.application.port.in.ResolveAccountDictUseCase;
 import com.bankhub.account.application.port.in.UploadSelfieUseCase;
 import com.bankhub.account.domain.Account;
 import com.bankhub.account.infrastructure.web.api.AccountApi;
+import com.bankhub.account.infrastructure.web.dto.AccountDictResponse;
 import com.bankhub.account.infrastructure.web.dto.AccountResponse;
 import com.bankhub.account.infrastructure.web.dto.DebitRequest;
 import com.bankhub.account.infrastructure.web.dto.PinRequest;
@@ -34,6 +36,7 @@ public class AccountController implements AccountApi {
     private final DepositAccountUseCase depositAccountUseCase;
     private final DebitAccountUseCase debitAccountUseCase;
     private final UploadSelfieUseCase uploadSelfieUseCase;
+    private final ResolveAccountDictUseCase resolveAccountDictUseCase;
     private final AccountWebMapper webMapper;
 
     @Override
@@ -104,6 +107,20 @@ public class AccountController implements AccountApi {
 
         Account verifiedAccount = uploadSelfieUseCase.execute(accountId, customerId, file);
         AccountResponse response = webMapper.toResponse(verifiedAccount);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<AccountDictResponse> resolveDict(String accountNumber) {
+        Account account = resolveAccountDictUseCase.execute(accountNumber);
+
+        AccountDictResponse response = AccountDictResponse.builder()
+                .accountId(account.id())
+                .customerId(account.customerId())
+                .agency(account.accountNumber().agency())
+                .accountNumber(account.accountNumber().number())
+                .build();
 
         return ResponseEntity.ok(response);
     }

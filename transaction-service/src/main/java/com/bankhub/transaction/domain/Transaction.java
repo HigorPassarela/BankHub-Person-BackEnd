@@ -13,6 +13,7 @@ public record Transaction(
         BigDecimal amount,
         TransactionType type,
         TransactionStatus status,
+        TransactionCategory category,
         String failureReason,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -21,6 +22,9 @@ public record Transaction(
     public Transaction {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor da transação deve ser estritamente maior que zero.");
+        }
+        if (category == null) {
+            category = TransactionCategory.OTHER;
         }
     }
 
@@ -32,6 +36,7 @@ public record Transaction(
                 .amount(this.amount)
                 .type(this.type)
                 .status(TransactionStatus.COMPLETED)
+                .category(this.category)
                 .failureReason(null)
                 .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
@@ -46,6 +51,7 @@ public record Transaction(
                 .amount(this.amount)
                 .type(this.type)
                 .status(TransactionStatus.FAILED)
+                .category(this.category)
                 .failureReason(reason)
                 .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())

@@ -39,4 +39,9 @@ public interface AccountPersistencePort {
      * Busca uma conta apenas pelo ID (Usado para creditar o PIX no destino).
      */
     Optional<Account> findById(String id);
+
+    /**
+     * Busca uma conta pelo número amigável (Usado para o DICT do PIX).
+     */
+    Optional<Account> findByAccountNumber(String number);
 }

@@ -12,10 +12,12 @@ public interface InitiatePixUseCase {
     /**
      * Inicia a etapa 1 da Saga de Transferência.
      *
-     * @param sourceAccountId ID da conta remetente (Dono do dinheiro).
+     * @param sourceAccountId ID do cliente remetente (Dono do dinheiro).
      * @param destinationAccountId ID da conta recebedora.
      * @param amount Quantia a ser transferida.
+     * @param transactionPin Senha transacional de 4 dígitos exigida pelo Frontend (NOVO).
+     * @param jwtToken Token de autorização para o Feign Client (NOVO).
      * @return A transação registrada no Ledger como PENDENTE.
      */
-    Transaction execute(String sourceAccountId, String destinationAccountId, BigDecimal amount);
+    Transaction execute(String sourceAccountId, String destinationAccountId, BigDecimal amount, String transactionPin, String jwtToken, String category);
 }

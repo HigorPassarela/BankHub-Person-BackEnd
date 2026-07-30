@@ -1,5 +1,6 @@
 package com.bankhub.account.infrastructure.web.api;
 
+import com.bankhub.account.infrastructure.web.dto.AccountDictResponse;
 import com.bankhub.account.infrastructure.web.dto.AccountResponse;
 import com.bankhub.account.infrastructure.web.dto.ActivationRequest;
 import com.bankhub.account.infrastructure.web.dto.DebitRequest;
@@ -128,5 +129,11 @@ public interface AccountApi {
             @RequestHeader("X-User-Id") String customerId,
             @Parameter(description = "Arquivo de imagem (JPEG/PNG)")
             @RequestPart("file") MultipartFile file
+    );
+
+    @Operation(summary = "[M2M] Resolve os metadados de uma conta baseada no número (DICT do PIX).")
+    @GetMapping("/dict/{accountNumber}")
+    ResponseEntity<AccountDictResponse> resolveDict(
+            @PathVariable String accountNumber
     );
 }

@@ -1,4 +1,4 @@
-package com.bankhub.transaction.infrastructure.messaging.dto;
+package com.bankhub.account.infrastructure.messaging.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,9 +7,12 @@ import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Payload recebido do Kafka solicitando o estorno assíncrono de valores (Saga Compensation).
+ */
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TransactionEventMessage(
+public record RefundCommandMessage(
         @JsonProperty("header") Header header,
         @JsonProperty("payload") Payload payload
 ) {
@@ -20,18 +23,13 @@ public record TransactionEventMessage(
             @JsonProperty("correlationId") String correlationId,
             @JsonProperty("eventType") String eventType,
             @JsonProperty("timestamp") LocalDateTime timestamp
-    ) {
-    }
+    ) {}
 
     @Builder
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Payload(
-            @JsonProperty("transactionId") String transactionId,
-            @JsonProperty("sourceAccountId") String sourceAccountId,
-            @JsonProperty("destinationAccountId") String destinationAccountId,
-            @JsonProperty("amount") BigDecimal amount,
-            @JsonProperty("type") String type,
-            @JsonProperty("status") String status
-    ) {
-    }
+            @JsonProperty("accountId") String accountId,
+            @JsonProperty("customerId") String customerId,
+            @JsonProperty("amount") BigDecimal amount
+    ) {}
 }

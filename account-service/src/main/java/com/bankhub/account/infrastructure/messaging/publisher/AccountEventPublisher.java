@@ -3,6 +3,7 @@ package com.bankhub.account.infrastructure.messaging.publisher;
 import com.bankhub.account.domain.event.AccountCreatedEvent;
 import com.bankhub.account.domain.event.PixProcessedEvent;
 import com.bankhub.account.infrastructure.messaging.dto.AccountEventMessage;
+import com.bankhub.account.infrastructure.messaging.dto.SagaReplyMessage;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,17 +59,16 @@ public class AccountEventPublisher {
     public void handlePixProcessedEvent(PixProcessedEvent event) {
         log.info("Preparando Saga Reply Kafka para a Transação [{}] -> Status: {}", event.transactionId(), event.sagaStatus());
 
-        AccountEventMessage replyMessage = AccountEventMessage.builder()
-                .header(AccountEventMessage.Header.builder()
+        SagaReplyMessage replyMessage = SagaReplyMessage.builder()
+                .header(SagaReplyMessage.Header.builder()
                         .correlationId(UUID.randomUUID().toString())
                         .eventType("PIX_PROCESSED_REPLY")
                         .timestamp(LocalDateTime.now())
                         .build())
-                .payload(AccountEventMessage.Payload.builder()
-                        .accountId(event.transactionId())
-                        .status(event.sagaStatus())
-                        .agency("SYSTEM")
-                        .accountNumber(event.failureReason() != null ? event.failureReason() : "OK")
+                .payload(SagaReplyMessage.Payload.builder()
+                        .transactionId(event.transactionId())
+                        .sagaStatus(event.sagaStatus())
+                        .failureReason(event.failureReason() != null ? event.failureReason() : "OK")
                         .build())
                 .build();
 

@@ -33,6 +33,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
+     * Captura validações de domínio e regras de negócio (ex: Valores negativos, status inválido).
+     * Retorna 400 Bad Request.
+     */
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ProblemDetail handleBusinessExceptions(RuntimeException ex) {
+        log.warn("Exceção de Regra de Negócio tratada (400): {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle("Requisição Inválida");
+        problemDetail.setType(URI.create("https://bank-hub.com/errors/bad-request"));
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    /**
      * Fallback (Catch-All) para erros inesperados, garantindo que a stacktrace nunca vaze (Lei 3.B).
      */
     @ExceptionHandler(Exception.class)

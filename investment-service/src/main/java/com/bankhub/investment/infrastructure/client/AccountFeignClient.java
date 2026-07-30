@@ -1,6 +1,7 @@
 package com.bankhub.investment.infrastructure.client;
 
 import com.bankhub.investment.infrastructure.client.dto.DebitRequest;
+import com.bankhub.investment.infrastructure.client.dto.DepositRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,6 @@ public interface AccountFeignClient {
     void refundAccount(
             @PathVariable("accountId") String accountId,
             @RequestHeader("X-User-Id") String customerId,
-            @RequestBody DebitRequest request
+            @RequestBody DepositRequest request
     );
 }

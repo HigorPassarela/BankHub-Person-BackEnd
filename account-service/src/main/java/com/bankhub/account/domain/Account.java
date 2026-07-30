@@ -17,6 +17,7 @@ public record Account(
         String transactionPinHash,
         boolean isIdentityVerified,
         String selfieUrl,
+        InvestorProfile investorProfile,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -128,6 +129,23 @@ public record Account(
                 .transactionPinHash(newHashedPin)
                 .isIdentityVerified(this.isIdentityVerified)
                 .selfieUrl(this.selfieUrl)
+                .createdAt(this.createdAt)
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public Account updateInvestorProfile(InvestorProfile profile) {
+        return Account.builder()
+                .id(this.id)
+                .customerId(this.customerId)
+                .accountNumber(this.accountNumber)
+                .balance(this.balance)
+                .status(this.status)
+                .version(this.version)
+                .transactionPinHash(this.transactionPinHash)
+                .isIdentityVerified(this.isIdentityVerified)
+                .selfieUrl(this.selfieUrl)
+                .investorProfile(profile) // Seta o novo perfil classificado pelo LLM
                 .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
                 .build();

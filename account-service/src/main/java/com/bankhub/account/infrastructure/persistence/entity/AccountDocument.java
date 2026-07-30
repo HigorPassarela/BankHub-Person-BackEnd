@@ -1,6 +1,7 @@
 package com.bankhub.account.infrastructure.persistence.entity;
 
 import com.bankhub.account.domain.AccountStatus;
+import com.bankhub.account.domain.InvestorProfile;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,6 +35,8 @@ public class AccountDocument {
     private String transactionPinHash;
     private boolean isIdentityVerified;
     private String selfieUrl;
+
+    private InvestorProfile investorProfile;
 
     @Version
     private Long version;

@@ -14,6 +14,7 @@ public record AccountResponse(
         boolean hasTransactionPin,
         boolean identityVerified,
         String selfieUrl,
+        String investorProfile,
         LocalDateTime lastUpdate
 ) {
 

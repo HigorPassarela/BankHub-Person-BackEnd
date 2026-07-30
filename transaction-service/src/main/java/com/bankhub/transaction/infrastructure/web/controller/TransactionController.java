@@ -44,11 +44,12 @@ public class TransactionController {
             @RequestHeader("X-User-Id") String customerId,
             @Valid @RequestBody PixRequest request) {
 
-        log.info("Recebida requisição REST de PIX. Solicitante (User): {}, Destino (Conta): {}, Valor: {}",
-                customerId, request.getDestinationAccountId(), request.getAmount());
+        log.info("Recebida requisição REST de PIX. Solicitante (User): {}, Conta Origem: {}, Destino (Conta): {}, Valor: {}",
+                customerId, request.getSourceAccountId(), request.getDestinationAccountId(), request.getAmount());
 
         Transaction transaction = initiatePixUseCase.execute(
                 customerId,
+                request.getSourceAccountId(),
                 request.getDestinationAccountId(),
                 request.getAmount(),
                 request.getTransactionPin(),
@@ -82,13 +83,16 @@ public class TransactionController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/statement")
-    @Operation(summary = "Retorna o extrato de transações do usuário logado.")
+    @GetMapping("/{accountId}/statement")
+    @Operation(summary = "Retorna o extrato de transações de uma conta específica.")
     public ResponseEntity<List<Map<String, Object>>> getStatement(
             @Parameter(description = "ID do usuário", hidden = true)
-            @RequestHeader("X-User-Id") String accountId) {
+            @RequestHeader("X-User-Id") String customerId,
 
-        log.info("Recebida requisição REST para consulta de extrato. Conta: {}", accountId);
+            @Parameter(description = "ID da conta")
+            @PathVariable String accountId) {
+
+        log.info("Recebida requisição REST para consulta de extrato. Conta: {}, User: {}", accountId, customerId);
 
         List<Transaction> transactions = getStatementUseCase.execute(accountId);
 

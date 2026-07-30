@@ -57,9 +57,17 @@ public record Card(
         if (newLimit == null || newLimit.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("O limite de crédito não pode ser negativo.");
         }
+
+        BigDecimal utilizedAmount = this.creditLimit.subtract(this.availableLimit);
+        BigDecimal newAvailableLimit = newLimit.subtract(utilizedAmount);
+
+        if (newAvailableLimit.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("O novo limite não pode ser menor que o valor já utilizado na fatura.");
+        }
+
         return this.toBuilder()
                 .creditLimit(newLimit)
-                .availableLimit(newLimit)
+                .availableLimit(newAvailableLimit)
                 .updatedAt(LocalDateTime.now())
                 .build();
     }

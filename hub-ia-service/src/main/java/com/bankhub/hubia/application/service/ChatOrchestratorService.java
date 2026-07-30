@@ -28,7 +28,7 @@ public class ChatOrchestratorService {
         String accountContext = accountTools.getAccountData(accountId, customerId);
 
         log.debug("Enviando prompt com contexto injetado para o LLM...");
-        String aiResponse = bankAssistantAgent.chat(accountId, accountContext, sanitizedMessage);
+        String aiResponse = bankAssistantAgent.chat(accountId, accountId, customerId, accountContext, sanitizedMessage);
 
         log.info("Processamento de IA concluído.");
         return aiResponse;

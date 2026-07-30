@@ -3,6 +3,7 @@ package com.bankhub.account.infrastructure.mapper;
 import com.bankhub.account.domain.Account;
 import com.bankhub.account.domain.AccountNumber;
 import com.bankhub.account.domain.Balance;
+import com.bankhub.account.domain.InvestorProfile;
 import com.bankhub.account.infrastructure.persistence.entity.AccountDocument;
 import com.bankhub.account.infrastructure.persistence.entity.AccountNumberModel;
 import com.bankhub.account.infrastructure.persistence.entity.BalanceModel;
@@ -25,6 +26,7 @@ public interface AccountMapper {
                 .transactionPinHash(document.getTransactionPinHash())
                 .isIdentityVerified(document.isIdentityVerified())
                 .selfieUrl(document.getSelfieUrl())
+                .investorProfile(document.getInvestorProfile() != null ? document.getInvestorProfile() : InvestorProfile.PENDING)
                 .version(document.getVersion())
                 .createdAt(document.getCreatedAt())
                 .updatedAt(document.getUpdatedAt())
@@ -45,6 +47,7 @@ public interface AccountMapper {
                 .transactionPinHash(domain.transactionPinHash())
                 .isIdentityVerified(domain.isIdentityVerified())
                 .selfieUrl(domain.selfieUrl())
+                .investorProfile(domain.investorProfile())
                 .version(domain.version())
                 .createdAt(domain.createdAt())
                 .updatedAt(domain.updatedAt())

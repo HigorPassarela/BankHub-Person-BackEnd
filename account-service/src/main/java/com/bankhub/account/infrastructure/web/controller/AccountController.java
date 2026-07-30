@@ -7,8 +7,11 @@ import com.bankhub.account.application.port.in.DebitAccountUseCase;
 import com.bankhub.account.application.port.in.DepositAccountUseCase;
 import com.bankhub.account.application.port.in.FindAccountUseCase;
 import com.bankhub.account.application.port.in.ResolveAccountDictUseCase;
+import com.bankhub.account.application.port.in.UpdateInvestorProfileUseCase;
 import com.bankhub.account.application.port.in.UploadSelfieUseCase;
+import com.bankhub.account.application.port.in.ValidateTransactionPinUseCase;
 import com.bankhub.account.domain.Account;
+import com.bankhub.account.domain.InvestorProfile;
 import com.bankhub.account.infrastructure.web.api.AccountApi;
 import com.bankhub.account.infrastructure.web.dto.AccountDictResponse;
 import com.bankhub.account.infrastructure.web.dto.AccountResponse;
@@ -37,6 +40,8 @@ public class AccountController implements AccountApi {
     private final DebitAccountUseCase debitAccountUseCase;
     private final UploadSelfieUseCase uploadSelfieUseCase;
     private final ResolveAccountDictUseCase resolveAccountDictUseCase;
+    private final ValidateTransactionPinUseCase validateTransactionPinUseCase;
+    private final UpdateInvestorProfileUseCase updateInvestorProfileUseCase;
     private final AccountWebMapper webMapper;
 
     @Override
@@ -123,5 +128,24 @@ public class AccountController implements AccountApi {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<Void> validateTransaction(String accountId, String customerId, @Valid PinRequest request) {
+        log.info("Recebida requisição REST para validar transação M2M (Zero Trust). Conta: {}", accountId);
+
+        validateTransactionPinUseCase.execute(accountId, customerId, request.transactionPin());
+
+        log.info("Validação M2M aprovada para a conta: {}", accountId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<AccountResponse> updateInvestorProfile(String accountId, String customerId, String profile) {
+        log.info("Recebida requisição REST para atualizar Suitability (IA). Conta: {}, Perfil: {}", accountId, profile);
+
+        Account account = updateInvestorProfileUseCase.execute(accountId, customerId, InvestorProfile.valueOf(profile.toUpperCase()));
+
+        return ResponseEntity.ok(webMapper.toResponse(account));
     }
 }

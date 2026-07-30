@@ -11,6 +11,7 @@ public record AccountClientResponse(
         BankDetailsResponse bankDetails,
         BalanceResponse balance,
         String status,
+        String investorProfile,
         LocalDateTime lastUpdate
 ) {
 

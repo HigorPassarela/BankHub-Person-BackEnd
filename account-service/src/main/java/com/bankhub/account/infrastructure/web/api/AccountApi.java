@@ -17,11 +17,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -135,5 +137,39 @@ public interface AccountApi {
     @GetMapping("/dict/{accountNumber}")
     ResponseEntity<AccountDictResponse> resolveDict(
             @PathVariable String accountNumber
+    );
+
+    @Operation(summary = "[M2M] Valida o PIN transacional e o status do KYC antes de uma operação crítica (ex: PIX, Investimento).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Validação de segurança concluída com sucesso."),
+            @ApiResponse(responseCode = "403", description = "Acesso negado: PIN incorreto ou KYC pendente.",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada ou acesso negado (Zero Trust).",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/{accountId}/validate-transaction")
+    ResponseEntity<Void> validateTransaction(
+            @Parameter(description = "ID interno da conta")
+            @PathVariable String accountId,
+            @Parameter(description = "ID do usuário autenticado (Zero Trust)")
+            @RequestHeader("X-User-Id") String customerId,
+            @RequestBody PinRequest request
+    );
+
+    @Operation(summary = "[M2M] Atualiza o perfil de investidor do cliente (Suitability classificado pela IA).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Perfil atualizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada",
+                    content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PatchMapping("/{accountId}/profile")
+    ResponseEntity<AccountResponse> updateInvestorProfile(
+            @Parameter(description = "ID interno da conta")
+            @PathVariable String accountId,
+            @Parameter(description = "ID do usuário autenticado (Zero Trust)")
+            @RequestHeader("X-User-Id") String customerId,
+            @Parameter(description = "Perfil detectado: CONSERVATIVE, MODERATE ou AGGRESSIVE")
+            @RequestParam String profile
     );
 }

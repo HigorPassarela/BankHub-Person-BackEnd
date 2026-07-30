@@ -16,7 +16,7 @@ public class ResolvePixKeyService implements ResolvePixKeyUseCase {
     private final AccountFeignClient accountFeignClient;
 
     @Override
-    public PixKeyResolveResponse execute(String pixKey, String jwtToken) {
+    public PixKeyResolveResponse execute(String pixKey) {
         log.info("Consultando a chave PIX [{}] de forma síncrona no Account Service...", pixKey);
 
         if (pixKey == null || pixKey.isBlank()) {
@@ -24,8 +24,7 @@ public class ResolvePixKeyService implements ResolvePixKeyUseCase {
         }
 
         try {
-            String bearerToken = jwtToken.startsWith("Bearer ") ? jwtToken : "Bearer " + jwtToken;
-            AccountDictResponse response = accountFeignClient.resolveAccountByNumber(pixKey, bearerToken);
+            AccountDictResponse response = accountFeignClient.resolveAccountByNumber(pixKey);
 
             log.info("Chave PIX resolvida! O dinheiro irá para a Conta ID: {}", response.accountId());
 

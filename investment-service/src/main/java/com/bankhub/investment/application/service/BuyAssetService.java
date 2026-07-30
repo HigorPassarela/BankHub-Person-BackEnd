@@ -23,16 +23,14 @@ public class BuyAssetService implements BuyAssetUseCase {
 
     @Override
     @Transactional
-    public Portfolio execute(String customerId, String accountId, String ticker, String type, BigDecimal quantity, String jwtToken) {
+    public Portfolio execute(String customerId, String accountId, String ticker, String type, BigDecimal quantity) {
         log.info("Iniciando Ordem de Compra. Ticker: {}, Cotas: {}. Cliente: {}", ticker, quantity, customerId);
 
         BigDecimal currentMarketPrice = fetchMarketPrice(ticker);
         BigDecimal totalCost = currentMarketPrice.multiply(quantity);
 
-        // ETAPA 1 DA SAGA SÍNCRONA: Tira o dinheiro da conta (Se falhar aqui, lança erro normal e fim)
-        accountDebitPort.debitFunds(accountId, customerId, jwtToken, totalCost);
+        accountDebitPort.debitFunds(accountId, customerId, totalCost);
 
-        // ETAPA 2 DA SAGA: Tenta entregar a ação. Se explodir, faz o ROLLBACK do Passo 1!
         try {
             Asset purchasedAsset = new Asset(ticker, AssetType.valueOf(type.toUpperCase()), quantity, currentMarketPrice);
 
@@ -41,7 +39,6 @@ public class BuyAssetService implements BuyAssetUseCase {
 
             Portfolio updatedPortfolio = portfolio.addAsset(purchasedAsset);
 
-            // Se o MongoDB da corretora estiver fora do ar, a Exception voará a partir daqui!
             Portfolio savedPortfolio = persistencePort.save(updatedPortfolio);
 
             log.info("Ordem executada com sucesso! O Ativo {} foi adicionado à carteira.", ticker);
@@ -51,7 +48,7 @@ public class BuyAssetService implements BuyAssetUseCase {
             log.error("Erro fatal ao salvar a carteira de ações! Disparando Rollback Compensatório M2M...");
 
             // SAGA COMPENSATION: Devolve o dinheiro para a conta do cliente!
-            accountDebitPort.refundFunds(accountId, customerId, jwtToken, totalCost);
+            accountDebitPort.refundFunds(accountId, customerId, totalCost);
 
             // Repassa o erro pra frente para o Swagger avisar o cliente (e devolver o HTTP 500)
             throw new RuntimeException("Falha sistêmica ao registrar o ativo. O valor foi estornado para a sua conta.", e);

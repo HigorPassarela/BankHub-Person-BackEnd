@@ -21,15 +21,13 @@ public interface AccountFeignClient {
      */
     @GetMapping("/api/v1/accounts/dict/{accountNumber}")
     AccountDictResponse resolveAccountByNumber(
-            @PathVariable("accountNumber") String accountNumber,
-            @RequestHeader("Authorization") String token
+            @PathVariable("accountNumber") String accountNumber
     );
 
     @PostMapping("/api/v1/accounts/{accountId}/validate-transaction")
     void validateTransaction(
             @PathVariable("accountId") String accountId,
             @RequestHeader("X-User-Id") String customerId,
-            @RequestHeader("Authorization") String token,
             @RequestBody PinValidationRequest request
     );
 }

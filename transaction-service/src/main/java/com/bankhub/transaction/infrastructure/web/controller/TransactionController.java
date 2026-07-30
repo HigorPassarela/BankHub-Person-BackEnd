@@ -42,8 +42,6 @@ public class TransactionController {
     public ResponseEntity<PixResponse> initiatePix(
             @Parameter(description = "ID do usuário remetente", hidden = true)
             @RequestHeader("X-User-Id") String customerId,
-            @Parameter(description = "JWT Token", hidden = true)
-            @RequestHeader("Authorization") String jwtToken,
             @Valid @RequestBody PixRequest request) {
 
         log.info("Recebida requisição REST de PIX. Solicitante (User): {}, Destino (Conta): {}, Valor: {}",
@@ -54,7 +52,6 @@ public class TransactionController {
                 request.getDestinationAccountId(),
                 request.getAmount(),
                 request.getTransactionPin(),
-                jwtToken,
                 request.getCategory()
         );
 

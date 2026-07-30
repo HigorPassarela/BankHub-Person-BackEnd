@@ -21,7 +21,6 @@ public interface AccountFeignClient {
     void debitAccount(
             @PathVariable("accountId") String accountId,
             @RequestHeader("X-User-Id") String customerId,
-            @RequestHeader("Authorization") String token,
             @RequestBody DebitRequest request
     );
 
@@ -29,7 +28,6 @@ public interface AccountFeignClient {
     void refundAccount(
             @PathVariable("accountId") String accountId,
             @RequestHeader("X-User-Id") String customerId,
-            @RequestHeader("Authorization") String token,
             @RequestBody DebitRequest request
     );
 }

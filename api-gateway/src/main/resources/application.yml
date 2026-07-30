@@ -20,11 +20,22 @@ spring:
 
   cloud:
     gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000" # Frontend React
+              - "http://localhost:8089" # BFF
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
       routes:
         - id: account-service-route
           uri: http://bank-account-service:8081
           predicates:
-            - Path=/api/v1/accounts/**
+            - Path=/api/v1/accounts/{accountId}/**, /api/v1/accounts
           filters:
             - AccountStatusGuardrail
             - name: RequestRateLimiter

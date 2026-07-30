@@ -34,7 +34,7 @@ public class IdempotencyGatewayFilterFactory extends AbstractGatewayFilterFactor
 
             String redisKey = IDEMPOTENCY_PREFIX + idempotencyKey;
 
-            return redisTemplate.opsForValue().setIfAbsent(redisKey, "PROCESSING", Duration.ofHours(24))
+            return redisTemplate.opsForValue().setIfAbsent(redisKey, "PROCESSING", Duration.ofSeconds(10))
                     .flatMap(isNewRequest -> {
                         if (Boolean.TRUE.equals(isNewRequest)) {
                             log.debug("Idempotency-Key [{}] aceita. Repassando requisição.", idempotencyKey);

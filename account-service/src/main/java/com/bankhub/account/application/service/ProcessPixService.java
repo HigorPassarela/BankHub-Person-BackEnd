@@ -45,7 +45,17 @@ public class ProcessPixService implements ProcessPixUseCase {
             Account creditedAccount = destinationAccount.credit(amount);
 
             persistencePort.save(debitedAccount);
-            persistencePort.save(creditedAccount);
+
+            try {
+                persistencePort.save(creditedAccount);
+            } catch (Exception ex) {
+                log.error("Erro crítico ao salvar o crédito no destino. Executando Rollback Manual na conta de origem...");
+
+                Account rollbackAccount = debitedAccount.credit(amount);
+                persistencePort.save(rollbackAccount);
+
+                throw new IllegalStateException("Falha inesperada ao salvar o crédito no destino. O valor foi estornado.", ex);
+            }
 
             log.info("PIX {} processado com sucesso! Contas atualizadas no MongoDB.", transactionId);
             eventPublisher.publishEvent(new PixProcessedEvent(transactionId, "COMPLETED", null));

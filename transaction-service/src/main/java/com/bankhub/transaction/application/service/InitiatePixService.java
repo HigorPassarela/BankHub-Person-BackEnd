@@ -32,6 +32,11 @@ public class InitiatePixService implements InitiatePixUseCase {
         log.info("Iniciando Transação PIX. Solicitante: {}, Origem: {}, Destino: {}, Valor: {}",
                 customerId, sourceAccountId, destinationAccountId, amount);
 
+        if (sourceAccountId.equals(destinationAccountId)) {
+            log.warn("Fraude/Erro detectado: Tentativa de PIX para a própria conta. Conta: {}", sourceAccountId);
+            throw new IllegalArgumentException("Não é possível realizar uma transferência para a própria conta.");
+        }
+
         try {
             log.info("Acionando Account Service para validação de KYC e Senha Transacional...");
 

@@ -1,4 +1,4 @@
-package com.bankhub.transaction.infrastructure.messaging.dto;
+package com.bankhub.investment.infrastructure.messaging.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,9 +7,12 @@ import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Payload do comando enviado ao Kafka solicitando o estorno assíncrono de valores.
+ */
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TransactionEventMessage(
+public record RefundCommandMessage(
         @JsonProperty("header") Header header,
         @JsonProperty("payload") Payload payload
 ) {
@@ -26,12 +29,9 @@ public record TransactionEventMessage(
     @Builder
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Payload(
-            @JsonProperty("transactionId") String transactionId,
-            @JsonProperty("sourceAccountId") String sourceAccountId,
-            @JsonProperty("destinationAccountId") String destinationAccountId,
-            @JsonProperty("amount") BigDecimal amount,
-            @JsonProperty("type") String type,
-            @JsonProperty("status") String status
+            @JsonProperty("accountId") String accountId,
+            @JsonProperty("customerId") String customerId,
+            @JsonProperty("amount") BigDecimal amount
     ) {
     }
 }

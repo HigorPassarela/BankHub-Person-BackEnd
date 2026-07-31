@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TransactionEventMessage(
+public record SagaReplyMessage(
         @JsonProperty("header") Header header,
         @JsonProperty("payload") Payload payload
 ) {
@@ -27,11 +26,8 @@ public record TransactionEventMessage(
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Payload(
             @JsonProperty("transactionId") String transactionId,
-            @JsonProperty("sourceAccountId") String sourceAccountId,
-            @JsonProperty("destinationAccountId") String destinationAccountId,
-            @JsonProperty("amount") BigDecimal amount,
-            @JsonProperty("type") String type,
-            @JsonProperty("status") String status
+            @JsonProperty("sagaStatus") String sagaStatus,
+            @JsonProperty("failureReason") String failureReason
     ) {
     }
 }

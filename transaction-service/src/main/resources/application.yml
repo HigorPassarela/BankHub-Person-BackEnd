@@ -23,7 +23,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.bankhub.transaction.infrastructure.messaging.dto.TransactionEventMessage
+        spring.json.value.default.type: com.bankhub.transaction.infrastructure.messaging.dto.SagaReplyMessage
 
   security:
     oauth2:

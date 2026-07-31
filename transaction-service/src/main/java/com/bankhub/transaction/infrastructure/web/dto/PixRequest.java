@@ -19,6 +19,9 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PixRequest {
 
+    @NotBlank(message = "O ID da conta de origem é obrigatório.")
+    private String sourceAccountId;
+
     @NotBlank(message = "O ID da conta de destino é obrigatório.")
     private String destinationAccountId;
 

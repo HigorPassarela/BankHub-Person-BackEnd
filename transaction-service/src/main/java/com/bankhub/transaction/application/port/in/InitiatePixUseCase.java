@@ -17,6 +17,7 @@ public interface InitiatePixUseCase {
      * @param amount               Quantia a ser transferida.
      * @param transactionPin       Senha transacional de 4 dígitos exigida pelo Frontend (NOVO).
      * @return A transação registrada no Ledger como PENDENTE.
+     * @Param customerId           ID do customer
      */
-    Transaction execute(String sourceAccountId, String destinationAccountId, BigDecimal amount, String transactionPin, String category);
+    Transaction execute(String customerId, String sourceAccountId, String destinationAccountId, BigDecimal amount, String transactionPin, String category);
 }

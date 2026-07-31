@@ -28,14 +28,19 @@ public class InitiatePixService implements InitiatePixUseCase {
 
     @Override
     @Transactional
-    public Transaction execute(String sourceAccountId, String destinationAccountId, BigDecimal amount, String transactionPin, String category) {
-        log.info("Iniciando Transação PIX. Origem: {}, Destino: {}, Valor: {}",
-                sourceAccountId, destinationAccountId, amount);
+    public Transaction execute(String customerId, String sourceAccountId, String destinationAccountId, BigDecimal amount, String transactionPin, String category) {
+        log.info("Iniciando Transação PIX. Solicitante: {}, Origem: {}, Destino: {}, Valor: {}",
+                customerId, sourceAccountId, destinationAccountId, amount);
+
+        if (sourceAccountId.equals(destinationAccountId)) {
+            log.warn("Fraude/Erro detectado: Tentativa de PIX para a própria conta. Conta: {}", sourceAccountId);
+            throw new IllegalArgumentException("Não é possível realizar uma transferência para a própria conta.");
+        }
 
         try {
             log.info("Acionando Account Service para validação de KYC e Senha Transacional...");
 
-            accountFeignClient.validateTransaction(sourceAccountId, sourceAccountId, new PinValidationRequest(transactionPin));
+            accountFeignClient.validateTransaction(sourceAccountId, customerId, new PinValidationRequest(transactionPin));
             log.info("Validação de segurança aprovada! Autorizando PIX.");
         } catch (FeignException.Forbidden | FeignException.NotFound e) {
             log.warn("Falha de Segurança: O Account Service recusou a transação. Motivo do Feign: {}", e.getMessage());

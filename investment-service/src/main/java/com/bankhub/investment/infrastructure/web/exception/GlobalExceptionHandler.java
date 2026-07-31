@@ -44,4 +44,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return problemDetail;
     }
+
+    /**
+     * Captura exceções de segurança (Barreira Zero Trust), retornando 403 Forbidden.
+     */
+    @ExceptionHandler(SecurityException.class)
+    public ProblemDetail handleSecurityException(SecurityException ex) {
+        log.warn("Exceção de Segurança interceptada (403): {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problemDetail.setTitle("Acesso Negado (Zero Trust)");
+        problemDetail.setType(URI.create("https://bank-hub.com/errors/forbidden"));
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
 }

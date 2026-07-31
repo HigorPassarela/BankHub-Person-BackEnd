@@ -43,7 +43,8 @@ public class InvestmentController {
                 request.accountId(),
                 request.ticker(),
                 request.type(),
-                request.quantity()
+                request.quantity(),
+                request.transactionPin()
         );
 
         PortfolioResponse response = webMapper.toResponse(portfolio);

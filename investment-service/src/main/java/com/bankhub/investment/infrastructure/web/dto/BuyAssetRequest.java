@@ -3,6 +3,7 @@ package com.bankhub.investment.infrastructure.web.dto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import java.math.BigDecimal;
 
@@ -22,6 +23,10 @@ public record BuyAssetRequest(
 
         @NotNull(message = "A quantidade de cotas é obrigatória.")
         @DecimalMin(value = "0.01", message = "A quantidade deve ser maior que zero.")
-        BigDecimal quantity
+        BigDecimal quantity,
+
+        @NotBlank(message = "A sua Assinatura Eletrônica (PIN Transacional) é obrigatória para investir.")
+        @Pattern(regexp = "^\\d{4}$", message = "O PIN transacional deve conter exatamente 4 números.")
+        String transactionPin
 ) {
 }

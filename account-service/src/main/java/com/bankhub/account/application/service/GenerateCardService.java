@@ -5,6 +5,7 @@ import com.bankhub.account.application.port.out.AccountPersistencePort;
 import com.bankhub.account.application.port.out.CardCachePort;
 import com.bankhub.account.application.port.out.CardPersistencePort;
 import com.bankhub.account.domain.Account;
+import com.bankhub.account.domain.AccountStatus;
 import com.bankhub.account.domain.Card;
 import com.bankhub.account.domain.CardType;
 import com.bankhub.account.domain.exception.AccountNotFoundException;
@@ -38,6 +39,11 @@ public class GenerateCardService implements GenerateCardUseCase {
 
         Account account = accountPersistencePort.findByIdAndCustomerId(accountId, customerId)
                 .orElseThrow(() -> new AccountNotFoundException("Conta corrente não encontrada ou acesso negado."));
+
+        if (account.status() != AccountStatus.ACTIVE) {
+            log.warn("Tentativa de emissão de cartão negada. Conta {} está com status: {}", accountId, account.status());
+            throw new IllegalStateException("Emissão de cartões só é permitida para contas ativas e regulares.");
+        }
 
         String hashedPin = null;
         if (type == CardType.PHYSICAL) {

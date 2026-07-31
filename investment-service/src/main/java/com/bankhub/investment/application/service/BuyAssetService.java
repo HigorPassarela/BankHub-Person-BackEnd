@@ -6,6 +6,9 @@ import com.bankhub.investment.application.port.out.PortfolioPersistencePort;
 import com.bankhub.investment.domain.Asset;
 import com.bankhub.investment.domain.AssetType;
 import com.bankhub.investment.domain.Portfolio;
+import com.bankhub.investment.infrastructure.client.AccountFeignClient;
+import com.bankhub.investment.infrastructure.client.dto.PinValidationRequest;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,11 +23,24 @@ public class BuyAssetService implements BuyAssetUseCase {
 
     private final PortfolioPersistencePort persistencePort;
     private final AccountDebitPort accountDebitPort;
+    private final AccountFeignClient accountFeignClient;
 
     @Override
     @Transactional
-    public Portfolio execute(String customerId, String accountId, String ticker, String type, BigDecimal quantity) {
+    public Portfolio execute(String customerId, String accountId, String ticker, String type, BigDecimal quantity, String transactionPin) {
         log.info("Iniciando Ordem de Compra. Ticker: {}, Cotas: {}. Cliente: {}", ticker, quantity, customerId);
+
+        try {
+            log.info("Acionando Account Service para validação de KYC e Senha Transacional...");
+            accountFeignClient.validateTransaction(accountId, customerId, new PinValidationRequest(transactionPin));
+            log.info("Validação de segurança aprovada! Autorizando Investimento.");
+        } catch (FeignException.Forbidden | FeignException.NotFound e) {
+            log.warn("Falha de Segurança: O Account Service recusou a transação. Motivo do Feign: {}", e.getMessage());
+            throw new SecurityException("Transação negada: A sua senha está incorreta ou o KYC (Selfie) está pendente.");
+        } catch (Exception e) {
+            log.error("Erro na comunicação M2M com Account Service: {}", e.getMessage());
+            throw new IllegalStateException("O serviço de validação do banco está indisponível. Tente novamente em instantes.");
+        }
 
         BigDecimal currentMarketPrice = fetchMarketPrice(ticker);
         BigDecimal totalCost = currentMarketPrice.multiply(quantity);

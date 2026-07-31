@@ -2,6 +2,7 @@ package com.bankhub.investment.infrastructure.client;
 
 import com.bankhub.investment.infrastructure.client.dto.DebitRequest;
 import com.bankhub.investment.infrastructure.client.dto.DepositRequest;
+import com.bankhub.investment.infrastructure.client.dto.PinValidationRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,5 +31,12 @@ public interface AccountFeignClient {
             @PathVariable("accountId") String accountId,
             @RequestHeader("X-User-Id") String customerId,
             @RequestBody DepositRequest request
+    );
+
+    @PostMapping("/api/v1/accounts/{accountId}/validate-transaction")
+    void validateTransaction(
+            @PathVariable("accountId") String accountId,
+            @RequestHeader("X-User-Id") String customerId,
+            @RequestBody PinValidationRequest request
     );
 }

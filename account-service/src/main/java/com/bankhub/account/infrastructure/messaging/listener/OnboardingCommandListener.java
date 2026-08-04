@@ -17,7 +17,11 @@ public class OnboardingCommandListener {
     private static final String COMMAND_TOPIC = "bankhub.account.commands";
     private static final String CONSUMER_GROUP = "account-provisioning-group";
 
-    @KafkaListener(topics = COMMAND_TOPIC, groupId = CONSUMER_GROUP)
+    @KafkaListener(
+            topics = COMMAND_TOPIC,
+            groupId = CONSUMER_GROUP,
+            properties = {"spring.json.value.default.type=com.bankhub.account.infrastructure.messaging.dto.OnboardingCommandMessage"}
+    )
     public void handleProvisioningCommand(OnboardingCommandMessage message) {
         try {
             String prospectId = message.payload().customerId();

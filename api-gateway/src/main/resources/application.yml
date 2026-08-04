@@ -32,6 +32,11 @@ spring:
             maxAge: 3600
 
       routes:
+        - id: account-activation-route
+          uri: http://bank-account-service:8081
+          predicates:
+            - Path=/api/v1/accounts/activate
+
         - id: account-service-route
           uri: http://bank-account-service:8081
           predicates:

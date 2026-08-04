@@ -4,6 +4,7 @@ import com.bankhub.notification.application.port.in.SendNotificationUseCase;
 import com.bankhub.notification.application.port.out.EmailNotificationPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -13,11 +14,15 @@ public class SendNotificationService implements SendNotificationUseCase {
 
     private final EmailNotificationPort emailPort;
 
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Override
     public void execute(String accountId, String eventType, String status, String agency, String accountNumber, String activationToken) {
         log.info("Orquestrando notificação em HTML para a conta: {}, Evento: {}", accountId, eventType);
 
-        String customerEmail = "cliente-" + accountId + "@bankhub.local";
+        String safeIdentifier = accountNumber.replace("-", "").toLowerCase();
+        String customerEmail = "cliente-" + safeIdentifier + "@bankhub.local";
         String subject = formatSubject(eventType);
 
         String htmlBody = formatHtmlBody(accountId, eventType, status, agency, accountNumber, activationToken);
@@ -44,7 +49,7 @@ public class SendNotificationService implements SendNotificationUseCase {
      */
     private String formatHtmlBody(String accountId, String eventType, String status, String agency, String accountNumber, String activationToken) {
 
-        String activationLink = "http://localhost:3000/ativacao?token=" + activationToken;
+        String activationLink = frontendUrl + "/ativacao?token=" + activationToken;
 
         return String.format("""
             <!DOCTYPE html>

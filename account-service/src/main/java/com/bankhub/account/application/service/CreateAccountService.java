@@ -28,13 +28,16 @@ public class CreateAccountService implements CreateAccountUseCase {
 
     @Override
     @Transactional
-    public Account execute(String customerId) {
-        log.info("Iniciando a criação de conta para o cliente: {}", customerId);
+    public Account execute(String customerId, String fullName, String phone, String address) {
+        log.info("Iniciando a criação de conta para: {}", fullName);
 
         AccountNumber generatedNumber = generateBankCoordinates();
 
         Account newAccount = Account.builder()
                 .customerId(customerId)
+                .fullName(fullName)
+                .phone(phone)
+                .address(address)
                 .accountNumber(generatedNumber)
                 .balance(Balance.zero())
                 .status(AccountStatus.PENDING_ACTIVATION)
@@ -45,7 +48,6 @@ public class CreateAccountService implements CreateAccountUseCase {
         log.info("Conta criada no banco. ID Interno: {}, Ag/Conta: {}", savedAccount.id(), savedAccount.accountNumber().getFormatted());
 
         String activationToken = tokenPort.generateAndSaveToken(savedAccount.id());
-
         eventPublisher.publishEvent(new AccountCreatedEvent(savedAccount, activationToken));
 
         return savedAccount;

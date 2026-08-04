@@ -16,6 +16,9 @@ public record OnboardingCommandMessage(
     @Builder
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Payload(
-            @JsonProperty("customerId") String customerId
+            @JsonProperty("customerId") String customerId,
+            @JsonProperty("fullName") String fullName,
+            @JsonProperty("phone") String phone,
+            @JsonProperty("address") String address
     ){}
 }

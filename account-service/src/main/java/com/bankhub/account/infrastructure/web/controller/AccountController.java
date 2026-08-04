@@ -48,7 +48,8 @@ public class AccountController implements AccountApi {
     public ResponseEntity<AccountResponse> createAccount(String customerId) {
         log.info("Recebida requisição REST para criar conta. Titular: {}", customerId);
 
-        Account newAccount = createAccountUseCase.execute(customerId);
+        // FIX: Adicionado placeholders. O fluxo real passa pelo OnboardingCommandListener (Kafka).
+        Account newAccount = createAccountUseCase.execute(customerId, "Não Informado", "Não Informado", "Não Informado");
         AccountResponse response = webMapper.toResponse(newAccount);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

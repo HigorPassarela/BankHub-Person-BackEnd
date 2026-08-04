@@ -16,6 +16,15 @@ public record OnboardingRequest(
 
         @NotNull(message = "A renda mensal deve ser informada.")
         @PositiveOrZero(message = "A renda mensal não pode ser um valor negativo.")
-        BigDecimal monthlyIncome
+        BigDecimal monthlyIncome,
+
+        @NotBlank(message = "O nome é obrigatório.")
+        String fullName,
+
+        @NotBlank(message = "O telefone é obrigatório.")
+        String phone,
+
+        @NotBlank(message = "O endereço é obrigatório.")
+        String address
 ) {
 }

@@ -15,7 +15,10 @@ public record AccountResponse(
         boolean identityVerified,
         String selfieUrl,
         String investorProfile,
-        LocalDateTime lastUpdate
+        LocalDateTime lastUpdate,
+        String fullName,
+        String phone,
+        String address
 ) {
 
     @Builder

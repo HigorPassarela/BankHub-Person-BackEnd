@@ -28,6 +28,10 @@ public class AccountDocument {
     @Indexed
     private String customerId;
 
+    private String fullName;
+    private String phone;
+    private String address;
+
     private AccountNumberModel accountNumber;
     private BalanceModel balance;
     private AccountStatus status;

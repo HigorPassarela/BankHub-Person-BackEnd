@@ -20,7 +20,7 @@ public class StartOnboardingService implements StartOnboardingUseCase {
     private static final String PROCESS_ID = "OnboardingProcess";
 
     @Override
-    public String execute(String documentNumber, BigDecimal monthlyIncome) {
+    public String execute(String documentNumber, BigDecimal monthlyIncome, String fullName, String phone, String address) {
         log.info("Iniciando esteira de Onboarding para um novo prospecto (CPF/CNPJ: {})", documentNumber);
 
         String generatedCustomerId = UUID.randomUUID().toString();
@@ -28,7 +28,10 @@ public class StartOnboardingService implements StartOnboardingUseCase {
         Map<String, Object> variables = Map.of(
                 "customerId", generatedCustomerId,
                 "documentNumber", documentNumber,
-                "monthlyIncome", monthlyIncome
+                "monthlyIncome", monthlyIncome,
+                "fullName", fullName,
+                "phone", phone,
+                "address", address
         );
 
         try {
@@ -36,17 +39,11 @@ public class StartOnboardingService implements StartOnboardingUseCase {
                     .bpmnProcessId(PROCESS_ID)
                     .latestVersion()
                     .variables(variables)
-                    .send()
-                    .join();
+                    .send().join();
 
-            String protocolNumber = String.valueOf(event.getProcessInstanceKey());
-            log.info("Processo de Onboarding iniciado com sucesso! Protocolo: {}, Prospect ID atrelado: {}", protocolNumber, generatedCustomerId);
-
-            return protocolNumber;
-
+            return String.valueOf(event.getProcessInstanceKey());
         } catch (Exception e) {
-            log.error("Falha ao iniciar processo no Camunda para o prospecto [{}]. Motivo: {}", documentNumber, e.getMessage());
-            throw new RuntimeException("Não foi possível iniciar a solicitação. Tente novamente.", e);
+            throw new RuntimeException("Falha ao iniciar processo no Camunda.", e);
         }
     }
 }

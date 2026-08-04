@@ -24,11 +24,10 @@ public class OnboardingCommandListener {
     )
     public void handleProvisioningCommand(OnboardingCommandMessage message) {
         try {
-            String prospectId = message.payload().customerId();
+            var p = message.payload();
+            log.info("Comando de Provisionamento recebido do Camunda. Prospect: {}", p.fullName());
 
-            log.info("Comando de Provisionamento recebido do Camunda. Prospect ID: {}", prospectId);
-
-            createAccountUseCase.execute(prospectId);
+            createAccountUseCase.execute(p.customerId(), p.fullName(), p.phone(), p.address());
 
             log.info("Conta gerada com sucesso a partir do comando assíncrono.");
         } catch (Exception e) {

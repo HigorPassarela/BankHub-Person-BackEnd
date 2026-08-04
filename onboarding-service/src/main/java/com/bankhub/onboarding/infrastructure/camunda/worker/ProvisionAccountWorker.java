@@ -26,8 +26,13 @@ public class ProvisionAccountWorker {
      */
     @JobWorker(type = "provision-account", autoComplete = true)
     @Retry(name = "kafkaRetry", fallbackMethod = "fallbackProvisioning")
-    public void provisionAccount(@Variable(name = "customerId") String customerId) {
-        log.info("Camunda Worker acionado: Provisionando conta bancária para o cliente [{}]", customerId);
+    public void provisionAccount(
+            @Variable(name = "customerId") String customerId,
+            @Variable(name = "fullName") String fullName,
+            @Variable(name = "phone") String phone,
+            @Variable(name = "address") String address
+    ) {
+        log.info("Camunda Worker: Provisionando conta para [{}]", fullName);
 
         Map<String, Object> commandMessage = Map.of(
                 "header", Map.of(
@@ -36,24 +41,19 @@ public class ProvisionAccountWorker {
                         "timestamp", LocalDateTime.now().toString()
                 ),
                 "payload", Map.of(
-                        "customerId", customerId
+                        "customerId", customerId,
+                        "fullName", fullName,
+                        "phone", phone,
+                        "address", address
                 )
         );
 
         kafkaTemplate.send(TOPIC, customerId, commandMessage);
-
-        log.info("Comando de criação de conta enviado ao Kafka com sucesso. Cliente [{}]", customerId);
+        log.info("Comando de criação de conta enviado ao Kafka. Cliente [{}]", customerId);
     }
 
-    /**
-     * Fallback acionado pelo Resilience4j em caso de indisponibilidade severa do broker Kafka.
-     */
-    public void fallbackProvisioning(String customerId, Exception ex) {
-        log.error("CRÍTICO: Falha ao enviar comando para o Kafka. Cliente [{}]. Motivo: {}",
-                customerId, ex.getMessage());
-
-        // Lançar exceção propaga o erro para o Camunda, que criará um Incidente
-        // visível no Zeebe Operate para intervenção manual (ou retentativa via painel).
-        throw new RuntimeException("Falha de comunicação com o broker Kafka durante provisionamento.", ex);
+    public void fallbackProvisioning(String customerId, String fullName, String phone, String address, Exception ex) {
+        log.error("CRÍTICO: Falha ao enviar comando para o Kafka. Cliente [{}].", customerId, ex);
+        throw new RuntimeException("Falha de comunicação com o broker Kafka.", ex);
     }
 }

@@ -14,5 +14,5 @@ public interface StartOnboardingUseCase {
      * @param monthlyIncome  Renda mensal declarada pelo cliente.
      * @return O número de protocolo (ID da instância do processo no orquestrador).
      */
-    String execute(String documentNumber, BigDecimal monthlyIncome);
+    String execute(String documentNumber, BigDecimal monthlyIncome, String fullName, String phone, String address);
 }

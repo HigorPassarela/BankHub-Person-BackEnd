@@ -25,21 +25,23 @@ public class OnboardingController {
 
     @PostMapping
     @Operation(summary = "Inicia o processo assíncrono de análise de risco para um visitante.")
-    public ResponseEntity<OnboardingResponse> startOnboarding(
-            @Valid @RequestBody OnboardingRequest request) {
+    public ResponseEntity<OnboardingResponse> startOnboarding(@Valid @RequestBody OnboardingRequest request) {
 
-        log.info("Recebida requisição REST de Visitante para iniciar Onboarding. Documento: {}", request.documentNumber());
+        log.info("Recebida requisição REST de Visitante. Nome: {}, Documento: {}", request.fullName(), request.documentNumber());
 
         String protocolNumber = startOnboardingUseCase.execute(
                 request.documentNumber(),
-                request.monthlyIncome()
+                request.monthlyIncome(),
+                request.fullName(),
+                request.phone(),
+                request.address()
         );
 
         OnboardingResponse response = OnboardingResponse.builder()
-                .message("Solicitação de abertura de conta recebida e em processamento.")
+                .message("Processamento iniciado.")
                 .protocol(protocolNumber)
                 .build();
 
-        return ResponseEntity.accepted().body(response);
+        return ResponseEntity.accepted().body(new OnboardingResponse("Processamento iniciado.", protocolNumber));
     }
 }

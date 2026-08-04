@@ -21,7 +21,7 @@ public class JwtHeaderEnrichmentFilter implements GlobalFilter, Ordered {
                 .cast(JwtAuthenticationToken.class)
                 .map(jwtAuth -> {
 
-                    String userId = jwtAuth.getToken().getSubject();
+                    String userId = jwtAuth.getToken().getClaimAsString("preferred_username");
 
                     log.debug("Security: Enriquecendo requisição com X-User-Id: {}", userId);
 

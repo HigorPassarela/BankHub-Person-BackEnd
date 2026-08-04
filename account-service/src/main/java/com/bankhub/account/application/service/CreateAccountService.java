@@ -33,8 +33,10 @@ public class CreateAccountService implements CreateAccountUseCase {
 
         AccountNumber generatedNumber = generateBankCoordinates();
 
+        String secureIdentity = generatedNumber.agency() + "-" + generatedNumber.number();
+
         Account newAccount = Account.builder()
-                .customerId(customerId)
+                .customerId(secureIdentity)
                 .fullName(fullName)
                 .phone(phone)
                 .address(address)

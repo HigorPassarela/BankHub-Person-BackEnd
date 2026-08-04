@@ -24,11 +24,11 @@ public class ProcessPixService implements ProcessPixUseCase {
     @Override
     @Transactional
     public void execute(String transactionId, String sourceAccountId, String destinationAccountId, BigDecimal amount) {
-        log.info("Processando transação PIX {}. Valor: {} | Origem (Cliente): {} -> Destino (Conta): {}",
+        log.info("Processando transação PIX {}. Valor: {} | Origem (Conta): {} -> Destino (Conta): {}",
                 transactionId, amount, sourceAccountId, destinationAccountId);
 
         try {
-            Account sourceAccount = persistencePort.findByCustomerId(sourceAccountId).stream().findFirst()
+            Account sourceAccount = persistencePort.findById(sourceAccountId)
                     .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada ou inválida."));
 
             Account destinationAccount = persistencePort.findById(destinationAccountId)

@@ -61,19 +61,17 @@ public class InvestmentController {
     public ResponseEntity<PortfolioResponse> getPortfolio(
             @Parameter(description = "ID do usuário logado", hidden = true)
             @RequestHeader("X-User-Id") String headerCustomerId,
-
             @Parameter(description = "ID do cliente a ser consultado")
             @PathVariable String customerId) {
 
-        log.info("Recebida requisição REST de Consulta de Portfólio. Solicitante: {}, Alvo: {}", headerCustomerId, customerId);
+        log.info("Recebida requisição REST de Consulta de Portfólio. Alvo: {}", customerId);
 
-        if (!headerCustomerId.equals(customerId)) {
-            log.warn("Acesso Negado: Usuário {} tentou consultar carteira do cliente {}.", headerCustomerId, customerId);
-            throw new SecurityException("Você não tem permissão para acessar a carteira de outro cliente.");
-        }
+//        if (!headerCustomerId.equals(customerId)) {
+//            log.warn("Acesso Negado: Usuário {} tentou consultar carteira do cliente {}.", headerCustomerId, customerId);
+//            throw new SecurityException("Você não tem permissão para acessar a carteira de outro cliente.");
+//        }
 
         Portfolio portfolio = getPortfolioUseCase.execute(customerId);
-
         PortfolioResponse response = webMapper.toResponse(portfolio);
 
         return ResponseEntity.ok(response);

@@ -21,7 +21,7 @@ public class FindAccountService implements FindAccountUseCase {
 
         return persistencePort.findByIdAndCustomerId(accountId, customerId)
                 .orElseThrow(() -> {
-                    log.warn("Falha de segurança/negócio: conta {} não encontrada ou cliente {} não é titular", accountId, customerId);
+                    log.warn("Falha de segurança: conta {} não encontrada ou cliente {} não é titular", accountId, customerId);
                     return new AccountNotFoundException("Conta não encontrada ou acesso negado para este cliente.");
                 });
     }

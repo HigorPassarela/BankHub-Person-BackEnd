@@ -5,7 +5,8 @@ import com.bankhub.account.domain.event.AccountStatusChangedEvent;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ public class AccountRedisSyncListener {
     /**
      * Ouve o evento de NASCIMENTO da conta (Gravará PENDING_ACTIVATION no Redis).
      */
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Retry(name = "redisRetry", fallbackMethod = "fallbackRedisSync")
     public void handleAccountCreatedEvent(AccountCreatedEvent event) {
         String accountId = event.account().id();
@@ -33,7 +34,7 @@ public class AccountRedisSyncListener {
     /**
      * NOVO: Ouve o evento de MUDANÇA DE STATUS da conta (Sobrescreverá para ACTIVE no Redis).
      */
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Retry(name = "redisRetry", fallbackMethod = "fallbackRedisSync")
     public void handleAccountStatusChangedEvent(AccountStatusChangedEvent event) {
         String accountId = event.account().id();

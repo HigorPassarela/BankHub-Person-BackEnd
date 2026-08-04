@@ -24,6 +24,11 @@ public class IdempotencyGatewayFilterFactory extends AbstractGatewayFilterFactor
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+
+            if (exchange.getRequest().getMethod().name().equals("GET")) {
+                return chain.filter(exchange);
+            }
+
             String idempotencyKey = exchange.getRequest().getHeaders().getFirst("Idempotency-Key");
 
             if (idempotencyKey == null || idempotencyKey.isBlank()) {

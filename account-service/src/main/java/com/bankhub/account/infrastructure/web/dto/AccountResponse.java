@@ -1,13 +1,13 @@
 package com.bankhub.account.infrastructure.web.dto;
 
 import lombok.Builder;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
 public record AccountResponse(
         String account,
+        String customerId,
         BankDetailsResponse bankDetails,
         BalanceResponse balance,
         String status,
@@ -20,18 +20,8 @@ public record AccountResponse(
         String phone,
         String address
 ) {
-
     @Builder
-    public record BankDetailsResponse(
-            String agency,
-            String number
-    ) {
-    }
-
+    public record BankDetailsResponse(String agency, String number) {}
     @Builder
-    public record BalanceResponse(
-            BigDecimal valor,
-            String moeda
-    ) {
-    }
+    public record BalanceResponse(BigDecimal valor, String moeda) {}
 }

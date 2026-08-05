@@ -3,7 +3,11 @@ package com.bankhub.transaction.infrastructure.web.controller;
 import com.bankhub.transaction.application.port.in.GetStatementUseCase;
 import com.bankhub.transaction.application.port.in.InitiatePixUseCase;
 import com.bankhub.transaction.application.port.in.ResolveBoletoUseCase;
+import com.bankhub.transaction.application.port.out.TransactionPersistencePort;
 import com.bankhub.transaction.domain.Transaction;
+import com.bankhub.transaction.domain.TransactionCategory;
+import com.bankhub.transaction.domain.TransactionStatus;
+import com.bankhub.transaction.domain.TransactionType;
 import com.bankhub.transaction.infrastructure.web.dto.BoletoResolveResponse;
 import com.bankhub.transaction.infrastructure.web.dto.PixRequest;
 import com.bankhub.transaction.infrastructure.web.dto.PixResponse;
@@ -36,6 +40,7 @@ public class TransactionController {
     private final InitiatePixUseCase initiatePixUseCase;
     private final ResolveBoletoUseCase resolveBoletoUseCase;
     private final GetStatementUseCase getStatementUseCase;
+    private final TransactionPersistencePort persistencePort;
 
     @PostMapping("/pix")
     @Operation(summary = "Inicia uma transferência PIX entre contas.")
@@ -65,6 +70,30 @@ public class TransactionController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @PostMapping("/internal/ledger")
+    public ResponseEntity<Void> registerInternalLedger(@RequestBody PixRequest request) {
+        log.info("Recebida requisição interna M2M para gravar no Ledger. Categoria: {}", request.getCategory());
+
+        TransactionCategory resolvedCategory = TransactionCategory.OTHER;
+        try {
+            resolvedCategory = TransactionCategory.valueOf(request.getCategory().toUpperCase());
+        } catch (Exception e) {
+
+        }
+
+        Transaction newTransaction = Transaction.builder()
+                .sourceAccountId(request.getSourceAccountId())
+                .destinationAccountId(request.getDestinationAccountId())
+                .amount(request.getAmount())
+                .type(TransactionType.PIX_OUT)
+                .status(TransactionStatus.COMPLETED)
+                .category(resolvedCategory)
+                .build();
+
+        persistencePort.save(newTransaction);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/boleto/{barcode}/resolve")

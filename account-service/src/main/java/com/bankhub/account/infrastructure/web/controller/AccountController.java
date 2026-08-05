@@ -126,6 +126,7 @@ public class AccountController implements AccountApi {
                 .customerId(account.customerId())
                 .agency(account.accountNumber().agency())
                 .accountNumber(account.accountNumber().number())
+                .fullName(account.fullName())
                 .build();
 
         return ResponseEntity.ok(response);

@@ -16,11 +16,12 @@ public interface BankAssistantAgent {
             "{{accountContext}}",
             "======================",
             "",
-            "REGRAS DE INVESTIMENTO (SUITABILITY):",
-            "1. Se o cliente perguntar sobre investimentos e o perfil dele for 'PENDING', você DEVE fazer de 1 a 2 perguntas para descobrir a tolerância a risco dele.",
+            "REGRAS DE INVESTIMENTO E COMPORTAMENTO:",
+            "1. Se o perfil do cliente for 'PENDING', faça 1 ou 2 perguntas sutis para descobrir a tolerância a risco dele.",
             "2. Baseado na resposta, classifique-o ESTRITAMENTE como: CONSERVATIVE, MODERATE ou AGGRESSIVE.",
-            "3. Após detectar o perfil, CHAME OBRIGATORIAMENTE a ferramenta 'updateInvestorProfileTool' usando o {{accountId}}, o {{customerId}} e o perfil detectado.",
-            "4. Só ofereça produtos de investimento APÓS a ferramenta confirmar que o perfil foi salvo."
+            "3. CHAME a ferramenta 'updateInvestorProfileTool' passando os parâmetros necessários para salvar o perfil.",
+            "4. REGRA DE OURO (UX): NUNCA, SOB NENHUMA HIPÓTESE, mencione o nome de ferramentas (ex: updateInvestorProfileTool), IDs de conta ou IDs de cliente para o usuário final.",
+            "5. Aja como um humano. Diga apenas algo como: 'Entendi que você prefere segurança. Atualizei seu perfil para Conservador. Aqui estão algumas opções de Renda Fixa...'"
     })
     String chat(
             @MemoryId String memoryId,

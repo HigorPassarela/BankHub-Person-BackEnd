@@ -65,6 +65,7 @@ services:
     environment:
       - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@mongodb:27017/bankhub_ledger?authSource=admin
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - BANKHUB_SERVICES_ACCOUNT_URL=http://account-service:8081
     networks:
       - bank-network
 

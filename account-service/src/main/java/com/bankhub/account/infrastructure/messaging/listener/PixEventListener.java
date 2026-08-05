@@ -17,7 +17,11 @@ public class PixEventListener {
     private static final String TOPIC = "bankhub.transaction.events";
     private static final String CONSUMER_GROUP = "account-group";
 
-    @KafkaListener(topics =  TOPIC, groupId = CONSUMER_GROUP)
+    @KafkaListener(
+            topics = TOPIC,
+            groupId = CONSUMER_GROUP,
+            properties = {"spring.json.value.default.type=com.bankhub.account.infrastructure.messaging.dto.TransactionEventMessage"}
+    )
     public void handleTransactionEvent(TransactionEventMessage message) {
         log.info("Evento consumido do Kafka. Topic: {}, CorrelationId: {}",
                 TOPIC, message.header().correlationId());

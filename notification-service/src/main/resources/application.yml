@@ -36,7 +36,14 @@ resilience4j:
           - org.springframework.mail.MailException
           - java.net.ConnectException
 
+
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces
   endpoints:
     web:
       exposure:

@@ -36,7 +36,7 @@ public class CreateAccountService implements CreateAccountUseCase {
         String secureIdentity = generatedNumber.agency() + "-" + generatedNumber.number();
 
         Account newAccount = Account.builder()
-                .customerId(secureIdentity)
+                .customerId(customerId)
                 .fullName(fullName)
                 .phone(phone)
                 .address(address)

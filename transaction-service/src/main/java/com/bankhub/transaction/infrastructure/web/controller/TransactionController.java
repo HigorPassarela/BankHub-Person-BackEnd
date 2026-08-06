@@ -50,15 +50,15 @@ public class TransactionController {
             @Valid @RequestBody PixRequest request) {
 
         log.info("Recebida requisição REST de PIX. Solicitante (User): {}, Conta Origem: {}, Destino (Conta): {}, Valor: {}",
-                customerId, request.getSourceAccountId(), request.getDestinationAccountId(), request.getAmount());
+                customerId, request.sourceAccountId(), request.destinationAccountId(), request.amount());
 
         Transaction transaction = initiatePixUseCase.execute(
                 customerId,
-                request.getSourceAccountId(),
-                request.getDestinationAccountId(),
-                request.getAmount(),
-                request.getTransactionPin(),
-                request.getCategory()
+                request.sourceAccountId(),
+                request.destinationAccountId(),
+                request.amount(),
+                request.transactionPin(),
+                request.category()
         );
 
         PixResponse response = PixResponse.builder()
@@ -74,19 +74,19 @@ public class TransactionController {
 
     @PostMapping("/internal/ledger")
     public ResponseEntity<Void> registerInternalLedger(@RequestBody PixRequest request) {
-        log.info("Recebida requisição interna M2M para gravar no Ledger. Categoria: {}", request.getCategory());
+        log.info("Recebida requisição interna M2M para gravar no Ledger. Categoria: {}", request.category());
 
         TransactionCategory resolvedCategory = TransactionCategory.OTHER;
         try {
-            resolvedCategory = TransactionCategory.valueOf(request.getCategory().toUpperCase());
+            resolvedCategory = TransactionCategory.valueOf(request.category().toUpperCase());
         } catch (Exception e) {
 
         }
 
         Transaction newTransaction = Transaction.builder()
-                .sourceAccountId(request.getSourceAccountId())
-                .destinationAccountId(request.getDestinationAccountId())
-                .amount(request.getAmount())
+                .sourceAccountId(request.sourceAccountId())
+                .destinationAccountId(request.destinationAccountId())
+                .amount(request.amount())
                 .type(TransactionType.PIX_OUT)
                 .status(TransactionStatus.COMPLETED)
                 .category(resolvedCategory)

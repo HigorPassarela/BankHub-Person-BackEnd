@@ -12,6 +12,8 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
     implementation 'io.camunda:spring-zeebe-starter:8.4.0'
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'

@@ -20,6 +20,8 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 //    implementation "dev.langchain4j:langchain4j-spring-boot-starter:${langChain4jVersion}"
 //    implementation "dev.langchain4j:langchain4j-open-ai:${langChain4jVersion}"
 //    implementation "dev.langchain4j:langchain4j-redis:${langChain4jVersion}"

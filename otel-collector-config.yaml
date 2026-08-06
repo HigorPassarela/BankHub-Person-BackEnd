@@ -15,21 +15,21 @@ processors:
     limit_mib: 512
 
 exporters:
-  jaeger:
-    endpoint: jaeger:14250
+  otlp/jaeger:
+    endpoint: jaeger:4317
     tls:
       insecure: true
   logging:
-    loglevel: info
+    verbosity: detailed
   prometheus:
-    endpoint: "0.0.0.0:8888"
+    endpoint: "0.0.0.0:8889"
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [jaeger, logging]
+      exporters: [otlp/jaeger, logging]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]

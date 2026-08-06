@@ -31,12 +31,21 @@ public class ProcessPixService implements ProcessPixUseCase {
             Account sourceAccount = persistencePort.findById(sourceAccountId)
                     .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada ou inválida."));
 
-            Account destinationAccount = persistencePort.findById(destinationAccountId)
-                    .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada."));
-
             if (sourceAccount.status() != AccountStatus.ACTIVE) {
                 throw new IllegalStateException("A conta de origem está inativa ou bloqueada.");
             }
+
+            if (destinationAccountId.equals("BOLETO-RECEIVER") || destinationAccountId.equals("B3-EXCHANGE")) {
+                Account debitedAccount = sourceAccount.debit(amount);
+                persistencePort.save(debitedAccount);
+                log.info("Pagamento externo processado com sucesso. Destino: {}", destinationAccountId);
+                eventPublisher.publishEvent(new PixProcessedEvent(transactionId, "COMPLETED", null));
+                return;
+            }
+
+            Account destinationAccount = persistencePort.findById(destinationAccountId)
+                    .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada."));
+
             if (destinationAccount.status() != AccountStatus.ACTIVE) {
                 throw new IllegalStateException("A conta de destino não pode receber transferências no momento.");
             }

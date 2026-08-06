@@ -1,0 +1,160 @@
+{
+  "realm": "bankhub",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 1800,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "clients": [
+    {
+      "clientId": "bankhub-services",
+      "name": "BankHub Microservices",
+      "description": "OAuth2 client for BankHub backend microservices",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "bankhub-secret-2024",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "attributes": {
+        "access.token.lifespan": "1800",
+        "client.secret.creation.time": "1706000000"
+      }
+    },
+    {
+      "clientId": "bankhub-frontend",
+      "name": "BankHub Frontend Application",
+      "description": "Public client for React/Angular frontend",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:8089/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:8089"
+      ],
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "fullScopeAllowed": true
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "customer",
+        "description": "Regular customer role with access to own account"
+      },
+      {
+        "name": "admin",
+        "description": "Administrator with full access"
+      },
+      {
+        "name": "support",
+        "description": "Support team with read-only access"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "customer1@bankhub.com",
+      "email": "customer1@bankhub.com",
+      "firstName": "João",
+      "lastName": "Silva",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "senha123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["customer"],
+      "attributes": {
+        "customerId": ["customer-001"]
+      }
+    },
+    {
+      "username": "customer2@bankhub.com",
+      "email": "customer2@bankhub.com",
+      "firstName": "Maria",
+      "lastName": "Santos",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "senha123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["customer"],
+      "attributes": {
+        "customerId": ["customer-002"]
+      }
+    },
+    {
+      "username": "admin@bankhub.com",
+      "email": "admin@bankhub.com",
+      "firstName": "Admin",
+      "lastName": "BankHub",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin", "customer"]
+    }
+  ],
+  "scopeMappings": [],
+  "clientScopeMappings": {},
+  "protocolMappers": [
+    {
+      "name": "customerId",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-attribute-mapper",
+      "config": {
+        "user.attribute": "customerId",
+        "claim.name": "customerId",
+        "jsonType.label": "String",
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "userinfo.token.claim": "true"
+      }
+    }
+  ]
+}

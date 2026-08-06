@@ -14,9 +14,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # URI pública do servidor de identidade (Keycloak/Auth0/Mock) que fornece a chave pública
-          # Nota: em ambiente local sem Auth Server real, você precisará usar uma chave secreta estática ou mock.
-          jwk-set-uri: http://keycloak:8080/realms/master/protocol/openid-connect/certs
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/bankhub/protocol/openid-connect/certs}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/bankhub}
 
   cloud:
     gateway:
@@ -32,15 +31,39 @@ spring:
             maxAge: 3600
 
       routes:
+        - id: account-read-only-route
+          uri: http://bank-account-service:8081
+          predicates:
+            - Path=/api/v1/accounts/{accountId}
+            - Method=GET
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
+
         - id: account-activation-route
           uri: http://bank-account-service:8081
           predicates:
             - Path=/api/v1/accounts/activate
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
 
         - id: account-dict-route
           uri: http://bank-account-service:8081
           predicates:
             - Path=/api/v1/accounts/dict/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
 
         - id: account-service-route
           uri: http://bank-account-service:8081
@@ -70,6 +93,11 @@ spring:
             - Path=/api/v1/transactions/**
           filters:
             - Idempotency
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
 
         - id: investment-service-route
           uri: http://bank-investment-service:8086
@@ -77,6 +105,11 @@ spring:
             - Path=/api/v1/investments/**
           filters:
             - Idempotency
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
 
 management:
   endpoints:

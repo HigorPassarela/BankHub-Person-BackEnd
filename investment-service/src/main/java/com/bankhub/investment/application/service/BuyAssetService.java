@@ -7,6 +7,7 @@ import com.bankhub.investment.domain.Asset;
 import com.bankhub.investment.domain.AssetType;
 import com.bankhub.investment.domain.Portfolio;
 import com.bankhub.investment.infrastructure.client.AccountFeignClient;
+import com.bankhub.investment.infrastructure.client.TransactionFeignClient;
 import com.bankhub.investment.infrastructure.client.dto.PinValidationRequest;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -24,22 +26,17 @@ public class BuyAssetService implements BuyAssetUseCase {
     private final PortfolioPersistencePort persistencePort;
     private final AccountDebitPort accountDebitPort;
     private final AccountFeignClient accountFeignClient;
+    private final TransactionFeignClient transactionFeignClient;
 
     @Override
     @Transactional
     public Portfolio execute(String customerId, String accountId, String ticker, String type, BigDecimal quantity, String transactionPin) {
-        log.info("Iniciando Ordem de Compra. Ticker: {}, Cotas: {}. Cliente: {}", ticker, quantity, customerId);
+        log.info("Iniciando Ordem de Compra. Ticker: {}. Cliente: {}", ticker, customerId);
 
         try {
-            log.info("Acionando Account Service para validação de KYC e Senha Transacional...");
             accountFeignClient.validateTransaction(accountId, customerId, new PinValidationRequest(transactionPin));
-            log.info("Validação de segurança aprovada! Autorizando Investimento.");
         } catch (FeignException.Forbidden | FeignException.NotFound e) {
-            log.warn("Falha de Segurança: O Account Service recusou a transação. Motivo do Feign: {}", e.getMessage());
             throw new SecurityException("Transação negada: A sua senha está incorreta ou o KYC (Selfie) está pendente.");
-        } catch (Exception e) {
-            log.error("Erro na comunicação M2M com Account Service: {}", e.getMessage());
-            throw new IllegalStateException("O serviço de validação do banco está indisponível. Tente novamente em instantes.");
         }
 
         BigDecimal currentMarketPrice = fetchMarketPrice(ticker);
@@ -49,25 +46,25 @@ public class BuyAssetService implements BuyAssetUseCase {
 
         try {
             Asset purchasedAsset = new Asset(ticker, AssetType.valueOf(type.toUpperCase()), quantity, currentMarketPrice);
+            Portfolio portfolio = persistencePort.findByCustomerId(customerId).orElseGet(() -> Portfolio.builder().customerId(customerId).build());
+            Portfolio savedPortfolio = persistencePort.save(portfolio.addAsset(purchasedAsset));
 
-            Portfolio portfolio = persistencePort.findByCustomerId(customerId)
-                    .orElseGet(() -> Portfolio.builder().customerId(customerId).build());
+            try {
+                transactionFeignClient.registerLedger(Map.of(
+                        "sourceAccountId", accountId,
+                        "destinationAccountId", "B3-EXCHANGE",
+                        "amount", totalCost,
+                        "category", "INVEST"
+                ));
+                log.info("Investimento gravado no Ledger com sucesso!");
+            } catch (Exception e) {
+                log.warn("Aviso: O investimento ocorreu, mas a gravação no extrato falhou: {}", e.getMessage());
+            }
 
-            Portfolio updatedPortfolio = portfolio.addAsset(purchasedAsset);
-
-            Portfolio savedPortfolio = persistencePort.save(updatedPortfolio);
-
-            log.info("Ordem executada com sucesso! O Ativo {} foi adicionado à carteira.", ticker);
             return savedPortfolio;
-
         } catch (Exception e) {
-            log.error("Erro fatal ao salvar a carteira de ações! Disparando Rollback Compensatório M2M...");
-
-            // SAGA COMPENSATION: Devolve o dinheiro para a conta do cliente!
             accountDebitPort.refundFunds(accountId, customerId, totalCost);
-
-            // Repassa o erro pra frente para o Swagger avisar o cliente (e devolver o HTTP 500)
-            throw new RuntimeException("Falha sistêmica ao registrar o ativo. O valor foi estornado para a sua conta.", e);
+            throw new RuntimeException("Falha sistêmica ao registrar o ativo. O valor foi estornado.", e);
         }
     }
 

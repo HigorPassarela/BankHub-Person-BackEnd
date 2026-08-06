@@ -29,7 +29,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak:8080/realms/master/protocol/openid-connect/certs
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/bankhub/protocol/openid-connect/certs}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/bankhub}
 
 resilience4j:
   retry:

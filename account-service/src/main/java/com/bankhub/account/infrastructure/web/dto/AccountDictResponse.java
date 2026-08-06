@@ -7,5 +7,6 @@ public record AccountDictResponse(
         String accountId,
         String customerId,
         String agency,
-        String accountNumber
+        String accountNumber,
+        String fullName
 ) {}

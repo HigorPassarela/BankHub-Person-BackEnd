@@ -1,31 +1,27 @@
 package com.bankhub.transaction.infrastructure.web.controller;
 
+import com.bankhub.transaction.application.port.in.CompletePixUseCase;
 import com.bankhub.transaction.application.port.in.GetStatementUseCase;
 import com.bankhub.transaction.application.port.in.InitiatePixUseCase;
 import com.bankhub.transaction.application.port.in.ResolveBoletoUseCase;
-import com.bankhub.transaction.application.port.out.TransactionPersistencePort;
+import com.bankhub.transaction.application.port.in.ResolvePixKeyUseCase;
 import com.bankhub.transaction.domain.Transaction;
 import com.bankhub.transaction.domain.TransactionCategory;
-import com.bankhub.transaction.domain.TransactionStatus;
-import com.bankhub.transaction.domain.TransactionType;
 import com.bankhub.transaction.infrastructure.web.dto.BoletoResolveResponse;
+import com.bankhub.transaction.infrastructure.web.dto.PixKeyResolveResponse;
 import com.bankhub.transaction.infrastructure.web.dto.PixRequest;
 import com.bankhub.transaction.infrastructure.web.dto.PixResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -34,107 +30,56 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/transactions")
 @RequiredArgsConstructor
-@Tag(name = "Transaction", description = "Motor de Transferências e PIX (Bank-Hub)")
+@Tag(name = "Transactions", description = "Motor de Pagamentos, Transferências (PIX) e Extratos")
 public class TransactionController {
 
     private final InitiatePixUseCase initiatePixUseCase;
-    private final ResolveBoletoUseCase resolveBoletoUseCase;
+    private final CompletePixUseCase completePixUseCase;
     private final GetStatementUseCase getStatementUseCase;
-    private final TransactionPersistencePort persistencePort;
+    private final ResolvePixKeyUseCase resolvePixKeyUseCase;
+    private final ResolveBoletoUseCase resolveBoletoUseCase;
 
     @PostMapping("/pix")
-    @Operation(summary = "Inicia uma transferência PIX entre contas.")
+    @Operation(summary = "Inicia uma transferência PIX entre contas", description = "Valida saldo, PIN e inicia a saga de transferência.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "202", description = "PIX Aceito e em processamento"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "403", description = "PIN incorreto ou bloqueio de segurança"),
+            @ApiResponse(responseCode = "422", description = "Saldo insuficiente")
+    })
     public ResponseEntity<PixResponse> initiatePix(
-            @Parameter(description = "ID do usuário remetente", hidden = true)
-            @RequestHeader("X-User-Id") String customerId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") String customerId,
             @Valid @RequestBody PixRequest request) {
 
-        log.info("Recebida requisição REST de PIX. Solicitante (User): {}, Conta Origem: {}, Destino (Conta): {}, Valor: {}",
-                customerId, request.sourceAccountId(), request.destinationAccountId(), request.amount());
+        log.info("Recebida requisição REST para iniciar PIX. Origem: {}", request.sourceAccountId());
 
         Transaction transaction = initiatePixUseCase.execute(
-                customerId,
-                request.sourceAccountId(),
-                request.destinationAccountId(),
-                request.amount(),
-                request.transactionPin(),
-                request.category()
+                customerId, request.sourceAccountId(), request.destinationAccountId(), request.amount(),
+                request.transactionPin(), request.category()
         );
 
-        PixResponse response = PixResponse.builder()
-                .transactionId(transaction.id())
-                .destinationAccountId(transaction.destinationAccountId())
-                .amount(transaction.amount())
-                .status(transaction.status().name())
-                .timestamp(transaction.createdAt())
-                .build();
-
+        PixResponse response = new PixResponse(transaction.id(), transaction.status().name(), "Em processamento");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
-    @PostMapping("/internal/ledger")
-    public ResponseEntity<Void> registerInternalLedger(@RequestBody PixRequest request) {
-        log.info("Recebida requisição interna M2M para gravar no Ledger. Categoria: {}", request.category());
-
-        TransactionCategory resolvedCategory = TransactionCategory.OTHER;
-        try {
-            resolvedCategory = TransactionCategory.valueOf(request.category().toUpperCase());
-        } catch (Exception e) {
-
-        }
-
-        Transaction newTransaction = Transaction.builder()
-                .sourceAccountId(request.sourceAccountId())
-                .destinationAccountId(request.destinationAccountId())
-                .amount(request.amount())
-                .type(TransactionType.PIX_OUT)
-                .status(TransactionStatus.COMPLETED)
-                .category(resolvedCategory)
-                .build();
-
-        persistencePort.save(newTransaction);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/boleto/{barcode}/resolve")
-    @Operation(summary = "Consulta os dados de um boleto antes de realizar o pagamento.")
-    public ResponseEntity<BoletoResolveResponse> resolveBoleto(
-            @Parameter(description = "ID do usuário (Segurança Zero Trust)", hidden = true)
-            @RequestHeader("X-User-Id") String customerId,
-
-            @Parameter(description = "Código de Barras ou Linha Digitável (Mín. 10 dígitos)")
-            @PathVariable String barcode) {
-
-        log.info("Recebida requisição REST de Consulta de Boleto. Solicitante: {}", customerId);
-
-        BoletoResolveResponse response = resolveBoletoUseCase.execute(barcode);
-
-        return ResponseEntity.ok(response);
-    }
-
     @GetMapping("/{accountId}/statement")
-    @Operation(summary = "Retorna o extrato de transações de uma conta específica.")
-    public ResponseEntity<List<Map<String, Object>>> getStatement(
-            @Parameter(description = "ID do usuário", hidden = true)
-            @RequestHeader("X-User-Id") String customerId,
-
-            @Parameter(description = "ID da conta")
+    @Operation(summary = "Retorna o extrato bancário detalhado de uma conta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Extrato retornado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada")
+    })
+    public ResponseEntity<List<Transaction>> getStatement(
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") String customerId,
             @PathVariable String accountId) {
+        
+        log.info("Recebida requisição REST de Extrato. Conta: {}", accountId);
+        return ResponseEntity.ok(getStatementUseCase.execute(accountId, customerId));
+    }
 
-        log.info("Recebida requisição REST para consulta de extrato. Conta: {}, User: {}", accountId, customerId);
-
-        List<Transaction> transactions = getStatementUseCase.execute(accountId);
-
-        List<Map<String, Object>> response = transactions.stream().map(t -> Map.<String, Object>of(
-                "transactionId", t.id(),
-                "type", t.sourceAccountId().equals(accountId) ? "DEBIT" : "CREDIT",
-                "amount", t.amount(),
-                "category", t.category().name(),
-                "status", t.status().name(),
-                "otherPartyAccount", t.sourceAccountId().equals(accountId) ? t.destinationAccountId() : t.sourceAccountId(),
-                "timestamp", t.createdAt()
-        )).toList();
-
-        return ResponseEntity.ok(response);
+    @PostMapping("/internal/ledger")
+    @Operation(summary = "Endpoint interno (M2M) para registro direto no Ledger (Ex: Home Broker)")
+    public ResponseEntity<Void> registerLedger(@RequestBody Map<String, Object> request) {
+        log.info("Recebida requisição interna M2M para gravar no Ledger.");
+        return ResponseEntity.ok().build();
     }
 }

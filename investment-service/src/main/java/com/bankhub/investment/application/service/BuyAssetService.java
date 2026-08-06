@@ -31,15 +31,21 @@ public class BuyAssetService implements BuyAssetUseCase {
     @Override
     @Transactional
     public Portfolio execute(String customerId, String accountId, String ticker, String type, BigDecimal quantity, String transactionPin) {
-        log.info("Iniciando Ordem de Compra. Ticker: {}. Cliente: {}", ticker, customerId);
-
+        
         try {
             accountFeignClient.validateTransaction(accountId, customerId, new PinValidationRequest(transactionPin));
         } catch (FeignException.Forbidden | FeignException.NotFound e) {
-            throw new SecurityException("Transação negada: A sua senha está incorreta ou o KYC (Selfie) está pendente.");
+            String msg = "Transação negada.";
+            try {
+                String body = e.contentUTF8();
+                if (body != null && body.contains("\"detail\":\"")) {
+                    msg = body.split("\"detail\":\"")[1].split("\"")[0];
+                }
+            } catch (Exception ignored) {}
+            throw new SecurityException(msg);
         }
 
-        BigDecimal currentMarketPrice = fetchMarketPrice(ticker);
+        BigDecimal currentMarketPrice = ticker.startsWith("CDB") ? new BigDecimal("1000.00") : new BigDecimal("35.50");
         BigDecimal totalCost = currentMarketPrice.multiply(quantity);
 
         accountDebitPort.debitFunds(accountId, customerId, totalCost);
@@ -50,30 +56,13 @@ public class BuyAssetService implements BuyAssetUseCase {
             Portfolio savedPortfolio = persistencePort.save(portfolio.addAsset(purchasedAsset));
 
             try {
-                transactionFeignClient.registerLedger(Map.of(
-                        "sourceAccountId", accountId,
-                        "destinationAccountId", "B3-EXCHANGE",
-                        "amount", totalCost,
-                        "category", "INVEST"
-                ));
-                log.info("Investimento gravado no Ledger com sucesso!");
-            } catch (Exception e) {
-                log.warn("Aviso: O investimento ocorreu, mas a gravação no extrato falhou: {}", e.getMessage());
-            }
+                transactionFeignClient.registerLedger(Map.of("sourceAccountId", accountId, "destinationAccountId", "B3-EXCHANGE", "amount", totalCost, "category", "INVEST"));
+            } catch (Exception ignored) {}
 
             return savedPortfolio;
         } catch (Exception e) {
             accountDebitPort.refundFunds(accountId, customerId, totalCost);
-            throw new RuntimeException("Falha sistêmica ao registrar o ativo. O valor foi estornado.", e);
+            throw new RuntimeException("Falha sistêmica ao registrar o ativo.", e);
         }
-    }
-
-    /**
-     * Mock de uma API Externa de Cotações (B3).
-     */
-    private BigDecimal fetchMarketPrice(String ticker) {
-        // Em um ambiente real, chamaríamos um MarketDataFeignClient aqui.
-        // Simulando que qualquer ação custa sempre R$ 35,50 e CDB custa R$ 1000,00.
-        return ticker.startsWith("CDB") ? new BigDecimal("1000.00") : new BigDecimal("35.50");
     }
 }

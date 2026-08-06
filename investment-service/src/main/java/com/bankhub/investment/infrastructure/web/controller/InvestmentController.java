@@ -8,6 +8,8 @@ import com.bankhub.investment.infrastructure.web.dto.PortfolioResponse;
 import com.bankhub.investment.infrastructure.web.mapper.PortfolioWebMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +60,11 @@ public class InvestmentController {
 
     @GetMapping("/portfolio/{customerId}")
     @Operation(summary = "Retorna a carteira consolidada de ativos de um cliente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Portfólio retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado - usuário tentou acessar carteira de outro cliente"),
+            @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
+    })
     public ResponseEntity<PortfolioResponse> getPortfolio(
             @Parameter(description = "ID do usuário logado", hidden = true)
             @RequestHeader("X-User-Id") String headerCustomerId,
@@ -66,10 +73,10 @@ public class InvestmentController {
 
         log.info("Recebida requisição REST de Consulta de Portfólio. Alvo: {}", customerId);
 
-//        if (!headerCustomerId.equals(customerId)) {
-//            log.warn("Acesso Negado: Usuário {} tentou consultar carteira do cliente {}.", headerCustomerId, customerId);
-//            throw new SecurityException("Você não tem permissão para acessar a carteira de outro cliente.");
-//        }
+        if (!headerCustomerId.equals(customerId)) {
+            log.warn("Acesso Negado: Usuário {} tentou consultar carteira do cliente {}.", headerCustomerId, customerId);
+            throw new SecurityException("Você não tem permissão para acessar a carteira de outro cliente.");
+        }
 
         Portfolio portfolio = getPortfolioUseCase.execute(customerId);
         PortfolioResponse response = webMapper.toResponse(portfolio);

@@ -12,6 +12,8 @@ volumes:
   zookeeper_data:
   es_data:
   litellm_db_data:
+  keycloak_data:
+  jaeger_data:
 
 services:
   mongodb:
@@ -120,6 +122,22 @@ services:
     networks:
       - bank-network
 
+  postfix:
+    image: boky/postfix:v3.8.0
+    container_name: bank-postfix
+    environment:
+      - ALLOW_EMPTY_SENDER_DOMAINS=true
+      - ALLOWED_SENDER_DOMAINS=$${POSTFIX_ALLOWED_DOMAINS:bankhub.local}
+      - RELAYHOST=${POSTFIX_RELAYHOST:}
+      - RELAYHOST_USERNAME=${POSTFIX_RELAYHOST_USERNAME:}
+      - RELAYHOST_PASSWORD=${POSTFIX_RELAYHOST_PASSWORD:}
+    ports:
+      - "1587:587"
+    networks:
+      - bank-network
+    profiles:
+      - production
+
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
     container_name: bank-litellm
@@ -156,10 +174,53 @@ services:
     image: quay.io/keycloak/keycloak:23.0.4
     container_name: bank-keycloak
     ports:
-      - "9000:8080" # Expõe o Keycloak na porta 9000 do Windows
+      - "9000:8080"
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-    command: start-dev
+      - KC_DB=dev-file
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak/bankhub-realm.json:/opt/keycloak/data/import/bankhub-realm.json:ro
+    command: start-dev --import-realm
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bank-network
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.91.0
+    container_name: bank-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics
+      - "13133:13133" # Health check
+    networks:
+      - bank-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: bank-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_EPHEMERAL=false
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
+    volumes:
+      - jaeger_data:/badger
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14250:14250" # gRPC collector
+      - "14268:14268" # HTTP collector
     networks:
       - bank-network

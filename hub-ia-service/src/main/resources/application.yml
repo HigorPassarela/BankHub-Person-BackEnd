@@ -22,6 +22,18 @@ bankhub:
     account:
       url: ${BANKHUB_SERVICES_ACCOUNT_URL:http://localhost:8081}
 
+  validation:
+    # Feature flags para validação de alucinações de IA
+    enabled: ${BANKHUB_VALIDATION_ENABLED:true}
+    hallucination-detection:
+      enabled: ${BANKHUB_VALIDATION_HALLUCINATION_DETECTION_ENABLED:true}
+    retry:
+      enabled: ${BANKHUB_VALIDATION_RETRY_ENABLED:true}
+      max-attempts: ${BANKHUB_VALIDATION_RETRY_MAX_ATTEMPTS:3}
+    audit:
+      enabled: ${BANKHUB_VALIDATION_AUDIT_ENABLED:true}
+      log-parameters: ${BANKHUB_VALIDATION_AUDIT_LOG_PARAMETERS:true}
+
 langchain4j:
   open-ai:
     chat-model:

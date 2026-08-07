@@ -58,7 +58,7 @@ public class TransactionController {
                 request.transactionPin(), request.category()
         );
 
-        PixResponse response = new PixResponse(transaction.id(), transaction.status().name(), "Em processamento");
+        PixResponse response = new PixResponse(transaction.id(), transaction.status().name(), transaction.amount(), "Em processamento", java.time.LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
@@ -73,7 +73,7 @@ public class TransactionController {
             @PathVariable String accountId) {
         
         log.info("Recebida requisição REST de Extrato. Conta: {}", accountId);
-        return ResponseEntity.ok(getStatementUseCase.execute(accountId, customerId));
+        return ResponseEntity.ok(getStatementUseCase.execute(accountId));
     }
 
     @PostMapping("/internal/ledger")

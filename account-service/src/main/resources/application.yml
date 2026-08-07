@@ -33,8 +33,8 @@ spring:
         jwt:
           # URI para buscar a chave pública do Keycloak (usando realm bankhub)
           jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/bankhub/protocol/openid-connect/certs}
-          # Extrai customerId do token JWT
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/bankhub}
+          # Validação de issuer agora é feita via custom JwtDecoder bean no SecurityConfig
+          # issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/bankhub}
 
 resilience4j:
   retry:

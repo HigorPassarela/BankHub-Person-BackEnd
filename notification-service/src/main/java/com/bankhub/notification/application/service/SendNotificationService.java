@@ -2,10 +2,17 @@ package com.bankhub.notification.application.service;
 
 import com.bankhub.notification.application.port.in.SendNotificationUseCase;
 import com.bankhub.notification.application.port.out.EmailNotificationPort;
+import com.bankhub.notification.domain.Notification;
+import com.bankhub.notification.domain.NotificationPreferences;
+import com.bankhub.notification.infrastructure.persistence.repository.NotificationPreferencesRepository;
+import com.bankhub.notification.infrastructure.persistence.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -13,6 +20,8 @@ import org.springframework.stereotype.Service;
 public class SendNotificationService implements SendNotificationUseCase {
 
     private final EmailNotificationPort emailPort;
+    private final NotificationRepository notificationRepository;
+    private final NotificationPreferencesRepository preferencesRepository;
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -27,9 +36,38 @@ public class SendNotificationService implements SendNotificationUseCase {
 
         String htmlBody = formatHtmlBody(accountId, eventType, status, agency, accountNumber, activationToken);
 
-        emailPort.sendHtmlEmail(customerEmail, subject, htmlBody);
+        NotificationPreferences preferences = preferencesRepository.findByAccountId(accountId)
+                .orElse(null);
 
-        log.info("Notificação HTML orquestrada e enviada à porta de saída para: {}", customerEmail);
+        boolean shouldSendEmail = preferences == null || preferences.getEmailEnabled();
+
+        if (!shouldSendEmail) {
+            log.info("Email notification skipped for account: {} (email disabled in preferences)", accountId);
+        } else {
+            emailPort.sendHtmlEmail(customerEmail, subject, htmlBody);
+            log.info("Notificação HTML orquestrada e enviada à porta de saída para: {}", customerEmail);
+        }
+
+        try {
+            String plainTextMessage = extractTextFromHtml(eventType, status, agency, accountNumber);
+
+            Notification notification = Notification.builder()
+                    .id(UUID.randomUUID())
+                    .accountId(accountId)
+                    .type(eventType)
+                    .title(subject)
+                    .message(plainTextMessage)
+                    .sentAt(LocalDateTime.now())
+                    .readAt(null)
+                    .readStatus(false)
+                    .build();
+
+            notificationRepository.save(notification);
+            log.info("Notification persisted to database for account: {}", accountId);
+
+        } catch (Exception e) {
+            log.error("Failed to persist notification to database for account: {}, but email was sent", accountId, e);
+        }
     }
 
     /**
@@ -37,8 +75,8 @@ public class SendNotificationService implements SendNotificationUseCase {
      */
     private String formatSubject(String eventType) {
         return switch (eventType) {
-            case "ACCOUNT_CREATED" -> "Bem-vindo ao Bank-Hub! Finalize sua abertura de conta \uD83C\uDF89";
-            case "ACCOUNT_BLOCKED" -> "ALERTA: Sua conta foi bloqueada \uD83D\uDEA8";
+            case "ACCOUNT_CREATED" -> "Bem-vindo ao Bank-Hub! Finalize sua abertura de conta 🎉";
+            case "ACCOUNT_BLOCKED" -> "ALERTA: Sua conta foi bloqueada 🚨";
             default -> "Atualização importante na sua conta Bank-Hub";
         };
     }
@@ -75,18 +113,18 @@ public class SendNotificationService implements SendNotificationUseCase {
                     <div class="content">
                         <p>Olá, futuro cliente Bank-Hub!</p>
                         <p>É com grande alegria que informamos que o seu processo de análise foi aprovado e a sua conta acaba de nascer no nosso ecossistema!</p>
-                        
+
                         <div class="account-box">
                             <strong>Agência:</strong> %s <br>
                             <strong>Número da Conta:</strong> %s <br>
                             <strong>Status Atual:</strong> <span style="color: #ff9f43; font-weight: bold;">%s</span> <br>
                             <strong>Ação do Sistema:</strong> %s
                         </div>
-                        
+
                         <p>Para começarmos a investir na Bolsa de Valores e realizar PIX, precisamos apenas do último passo de segurança.</p>
-                        
+
                         <a href="%s" class="button">Criar Minha Senha</a>
-                        
+
                         <p>Caso o botão acima não funcione, copie e cole este link no seu navegador: <br> <a href="%s" style="color: #6c5ce7; word-break: break-all;">%s</a></p>
                     </div>
                     <div class="footer">
@@ -97,5 +135,13 @@ public class SendNotificationService implements SendNotificationUseCase {
             </body>
             </html>
             """, agency, accountNumber, status, eventType, activationLink, activationLink, activationLink);
+    }
+
+    /**
+     * Extrai texto plano do conteúdo HTML para armazenamento no banco de dados.
+     */
+    private String extractTextFromHtml(String eventType, String status, String agency, String accountNumber) {
+        return String.format("Evento: %s | Agência: %s | Conta: %s | Status: %s",
+                eventType, agency, accountNumber, status);
     }
 }

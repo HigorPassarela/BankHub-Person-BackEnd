@@ -13,6 +13,7 @@ volumes:
   es_data:
   litellm_db_data:
   keycloak_data:
+  notification_db_data:
 
 services:
   mongodb:
@@ -37,6 +38,25 @@ services:
       - redis_data:/data
     networks:
       - bank-network
+
+  notification-db:
+    image: postgres:15-alpine
+    container_name: bank-notification-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification_db
+    volumes:
+      - notification_db_data:/var/lib/postgresql/data
+    networks:
+      - bank-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.4

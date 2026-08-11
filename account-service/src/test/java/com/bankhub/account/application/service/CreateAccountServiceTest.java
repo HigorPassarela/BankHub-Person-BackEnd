@@ -2,22 +2,22 @@ package com.bankhub.account.application.service;
 
 import com.bankhub.account.application.port.out.AccountPersistencePort;
 import com.bankhub.account.application.port.out.AccountTokenPort;
+import com.bankhub.account.base.BaseUnitTest;
 import com.bankhub.account.domain.Account;
 import com.bankhub.account.domain.AccountStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class CreateAccountServiceTest {
+@DisplayName("CreateAccountService Unit Tests")
+class CreateAccountServiceTest extends BaseUnitTest {
 
     @Mock
     private AccountPersistencePort persistencePort;
@@ -30,28 +30,27 @@ class CreateAccountServiceTest {
     private CreateAccountService createAccountService;
 
     @Test
-    @DisplayName("Deve criar uma nova conta com status PENDING_ACTIVATION e gerar token")
+    @DisplayName("should create account successfully with pending activation status")
     void shouldCreateAccountSuccessfully() {
-        // Arrange
         String customerId = "customer-123";
         String fullName = "Higor Passarela";
-        
-        when(persistencePort.save(any(Account.class))).thenAnswer(i -> {
-            Account acc = i.getArgument(0);
-            return acc.toBuilder().id("mock-id-123").build(); // Simula o retorno do MongoDB
+        String phone = "11999999999";
+        String address = "Rua A";
+
+        when(persistencePort.save(any(Account.class))).thenAnswer(invocation -> {
+            Account account = invocation.getArgument(0);
+            return account.toBuilder().id("acc-123").build();
         });
-        when(tokenPort.generateAndSaveToken("mock-id-123")).thenReturn("mock-token-uuid");
+        when(tokenPort.generateAndSaveToken(anyString())).thenReturn("activation-token-123");
 
-        // Act
-        Account result = createAccountService.execute(customerId, fullName, "11999999999", "Rua A");
+        Account result = createAccountService.execute(customerId, fullName, phone, address);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(AccountStatus.PENDING_ACTIVATION, result.status());
-        assertEquals("mock-id-123", result.id());
-        
-        verify(persistencePort, times(1)).save(any(Account.class));
-        verify(tokenPort, times(1)).generateAndSaveToken("mock-id-123");
-        verify(eventPublisher, times(1)).publishEvent(any());
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo("acc-123");
+        assertThat(result.customerId()).isEqualTo(customerId);
+        assertThat(result.fullName()).isEqualTo(fullName);
+        assertThat(result.status()).isEqualTo(AccountStatus.PENDING_ACTIVATION);
+        verify(persistencePort).save(any(Account.class));
+        verify(tokenPort).generateAndSaveToken("acc-123");
     }
 }

@@ -559,6 +559,46 @@ com.bankhub.{service}/
 
 **Note:** Integration tests use Testcontainers to spin up MongoDB, Kafka, and PostgreSQL containers automatically.
 
+### Code Coverage Reports
+
+BankHub uses JaCoCo for code coverage measurement with an 80% minimum threshold (60% for API Gateway).
+
+**Generate coverage reports:**
+
+```bash
+# Generate coverage report for specific service
+./gradlew :account-service:test jacocoTestReport
+
+# Generate coverage for all services
+./gradlew test jacocoTestReport
+
+# Verify coverage meets minimum threshold
+./gradlew jacocoTestCoverageVerification
+
+# Run tests with coverage verification (fails build if below threshold)
+./gradlew check
+```
+
+**View coverage reports:**
+
+HTML reports are generated at:
+- **Account Service:** `account-service/build/reports/jacoco/test/html/index.html`
+- **Transaction Service:** `transaction-service/build/reports/jacoco/test/html/index.html`
+- **Investment Service:** `investment-service/build/reports/jacoco/test/html/index.html`
+- **Notification Service:** `notification-service/build/reports/jacoco/test/html/index.html`
+- **Onboarding Service:** `onboarding-service/build/reports/jacoco/test/html/index.html`
+- **Hub IA Service:** `hub-ia-service/build/reports/jacoco/test/html/index.html`
+- **API Gateway:** `api-gateway/build/reports/jacoco/test/html/index.html`
+
+**Coverage thresholds:**
+- Most services: **80% minimum** line coverage
+- API Gateway: **60% minimum** line coverage (routing-only service)
+
+**Excluded from coverage:**
+- Spring Boot Application classes (`*Application.java`)
+- Configuration classes (`**/config/**`)
+- DTOs (`**/adapter/in/dto/**`)
+
 ### Code Standards
 
 | Aspect | Standard | Rationale |
